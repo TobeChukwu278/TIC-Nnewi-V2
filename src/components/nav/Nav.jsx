@@ -8,7 +8,7 @@ import NavbarComp from './NavbarComp'
 export const Nav = () => {
     return (
         <div className='flex flex-col justify-center gap-1.5 px-6 py-4 border-b bg-white dark:bg-transparent'>
-            <div className='flex justify-between items-center'>
+            <div className='hidden sm:flex justify-between items-center'>
                 <StoreMenubar />
                 <TextLoopBasic />
                 <div className='flex items-end text-sm'>
@@ -17,7 +17,7 @@ export const Nav = () => {
                 </div>
             </div>
             <div className='flex justify-between items-center'>
-                <h1><a href="/" className="shrink-0 text-2xl font-bold text-primary-700 dark:text-white">
+                <h1><a href="/" className="hidden sm:block shrink-0 text-2xl font-bold text-primary-700 dark:text-white">
                     TIC
                 </a></h1>
                 <ActionSearchBar />

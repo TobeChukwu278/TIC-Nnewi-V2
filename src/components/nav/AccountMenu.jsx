@@ -14,7 +14,7 @@ export default function AccountMenu({
     onVendorChange = () => { } // callback for vendor change
 }) {
     return (
-        <div className="flex items-center justify-end gap-2 w-fit px-4 py-2 bg-white shadow-sm">
+        <div className="hidden sm:flex items-center justify-end gap-2 w-fit px-4 py-2 bg-white shadow-sm">
             {/* Vendor Dropdown */}
             <div className="min-w-[150px]">
                 <label htmlFor="vendor_select" className="sr-only">

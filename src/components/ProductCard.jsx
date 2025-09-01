@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import {
     Eye,
     Heart,
@@ -11,30 +12,82 @@ import {
 
 // ✅ Product Card Component
 const ProductCard = ({ product }) => {
+    const [isAdding, setIsAdding] = useState(false);
+
+    const addToCart = () => {
+        setIsAdding(true);
+
+        // Get current cart from localStorage
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+        // Check if product already exists in cart
+        const existingItem = cart.find(item => item.id === product.id);
+
+        if (existingItem) {
+            // Increase quantity if product exists
+            existingItem.quantity += 1;
+        } else {
+            // Add new product to cart with only necessary data (no React objects)
+            cart.push({
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                quantity: 1,
+                image: product.main_image_url || product.image,
+                // Add any other simple data types you need
+                discount_price: product.discount_price,
+                rating: product.rating,
+                // Do NOT include React components or complex objects
+            });
+        }
+
+        // Save updated cart back to localStorage
+        localStorage.setItem('cart', JSON.stringify(cart));
+
+        // Dispatch event to notify navbar (and other components) about the update
+        window.dispatchEvent(new Event('cartUpdated'));
+
+        // Reset loading state after a short delay
+        setTimeout(() => setIsAdding(false), 500);
+
+        console.log('Product added to cart:', product.name);
+    };
+
+    // Calculate discount percentage safely
+    const discountPercentage = product.discount_price && product.price
+        ? Math.round(((product.price - product.discount_price) / product.price) * 100)
+        : 0;
+
     return (
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            {/* Image Section (wrapped in link) */}
+            {/* Image Section */}
             <Link to={`/products/${product.id}`} className="block h-56 w-full">
                 <img
-                    className="mx-auto h-full dark:hidden"
-                    src={product.main_image_url ? product.main_image_url : 'No image yet'}
-                    alt={product.title ? product.title : 'No title yet'}
+                    className="mx-auto h-full w-full object-contain dark:hidden"
+                    src={product.main_image_url || 'https://via.placeholder.com/300x300?text=No+Image'}
+                    alt={product.name || 'Product image'}
+                    onError={(e) => {
+                        e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
+                    }}
                 />
                 <img
-                    className="mx-auto hidden h-full dark:block"
-                    src={product.main_image_url ? product.main_image_url : 'No image yet'}
-                    alt={product.title ? product.title : 'No title yet'}
+                    className="mx-auto hidden h-full w-full object-contain dark:block"
+                    src={product.main_image_url || 'https://via.placeholder.com/300x300?text=No+Image'}
+                    alt={product.name || 'Product image'}
+                    onError={(e) => {
+                        e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
+                    }}
                 />
             </Link>
 
             {/* Product Details */}
             <div className="pt-6">
                 <div className="mb-4 flex items-center justify-between gap-4">
-                    {product.discount_price ? product.discount_price && (
+                    {discountPercentage > 0 && (
                         <span className="me-2 rounded bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-300">
-                            Up to {((product.price - product.discount_price) / product.price) * 100}% off
+                            {discountPercentage}% off
                         </span>
-                    ) : 'No discount yet'}
+                    )}
                     <div className="flex items-center justify-end gap-1">
                         <button className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                             <span className="sr-only">Quick look</span>
@@ -47,13 +100,13 @@ const ProductCard = ({ product }) => {
                     </div>
                 </div>
 
-                {/* Title (wrapped in link) */}
-                <a
-                    href={`/products/${product.id}`}
-                    className="text-lg font-semibold leading-tight text-gray-900 hover:underline dark:text-white"
+                {/* Title */}
+                <Link
+                    to={`/products/${product.id}`}
+                    className="text-lg font-semibold leading-tight text-gray-900 hover:underline dark:text-white line-clamp-2"
                 >
-                    {product.name ? product.name : 'name'}
-                </a>
+                    {product.name || 'Product Name'}
+                </Link>
 
                 {/* Rating */}
                 <div className="mt-2 flex items-center gap-2">
@@ -61,15 +114,18 @@ const ProductCard = ({ product }) => {
                         {Array.from({ length: 5 }).map((_, index) => (
                             <Star
                                 key={index}
-                                className="h-4 w-4 text-yellow-400 fill-yellow-400"
+                                className={`h-4 w-4 ${index < Math.floor(product.rating || 0)
+                                        ? "text-yellow-400 fill-yellow-400"
+                                        : "text-gray-300"
+                                    }`}
                             />
                         ))}
                     </div>
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {product.rating ? product.rating.toFixed(2) : "0.00"}
+                        {(product.rating || 0).toFixed(1)}
                     </p>
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                        ({product.reviewCount ? product.reviewCount : 'No reviews yet'})
+                        ({product.reviewCount || 0} reviews)
                     </p>
                 </div>
 
@@ -77,17 +133,17 @@ const ProductCard = ({ product }) => {
                 <ul className="mt-2 flex items-center gap-4">
                     {product.badge && (
                         <li className="flex items-center gap-2">
-                            {product.badge ? product.badge === "Fast Delivery" && (
+                            {product.badge === "Fast Delivery" && (
                                 <Truck className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                            ) : 'no badge yet'}
-                            {product.badge ? product.badge === "Best Seller" && (
+                            )}
+                            {product.badge === "Best Seller" && (
                                 <Award className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                            ) : 'no badge yet'}
-                            {product.badge ? product.badge === "Verified" && (
+                            )}
+                            {product.badge === "Verified" && (
                                 <BadgeCheck className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                            ) : 'no badge yet'}
+                            )}
                             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {product.badge ? product.badge : 'no badge yet'}
+                                {product.badge}
                             </p>
                         </li>
                     )}
@@ -101,12 +157,35 @@ const ProductCard = ({ product }) => {
 
                 {/* Pricing and Action */}
                 <div className="mt-4 flex items-center justify-between gap-4">
-                    <p className="text-2xl font-extrabold leading-tight text-gray-900 dark:text-white">
-                        ₦{product.price ? product.price : 'No set price yet'}
-                    </p>
-                    <button className="inline-flex items-center rounded-lg bg-green-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-700">
-                        <ShoppingCart className="mr-2 h-5 w-5" />
-                        Add to cart
+                    <div className="flex flex-col">
+                        {product.discount_price ? (
+                            <>
+                                <p className="text-2xl font-extrabold leading-tight text-gray-900 dark:text-white">
+                                    ₦{product.discount_price.toLocaleString()}
+                                </p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 line-through">
+                                    ₦{product.price.toLocaleString()}
+                                </p>
+                            </>
+                        ) : (
+                            <p className="text-2xl font-extrabold leading-tight text-gray-900 dark:text-white">
+                                ₦{(product.price || 0).toLocaleString()}
+                            </p>
+                        )}
+                    </div>
+                    <button
+                        onClick={addToCart}
+                        disabled={isAdding}
+                        className="inline-flex items-center rounded-lg bg-green-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        {isAdding ? (
+                            'Adding...'
+                        ) : (
+                            <>
+                                <ShoppingCart className="mr-2 h-4 w-4" />
+                                Add to cart
+                            </>
+                        )}
                     </button>
                 </div>
             </div>

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, User, Menu, X, ChevronDown, Home, Grid3X3, Trophy, Gift, Zap, Store, Sprout, HeartPulse, Wrench, Cpu, BookOpen, ChefHat } from "lucide-react";
 
 // Categories data
@@ -118,8 +119,8 @@ function ListItem({ title, href, icon: Icon, children, isMobile = false }) {
     if (isMobile) {
         return (
             <li>
-                <a
-                    href={href}
+                <Link
+                    to={href}
                     className="block py-2 px-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md transition-colors duration-200"
                 >
                     <div className="flex items-center gap-3">
@@ -129,14 +130,14 @@ function ListItem({ title, href, icon: Icon, children, isMobile = false }) {
                             {children && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{children}</p>}
                         </div>
                     </div>
-                </a>
+                </Link>
             </li>
         );
     }
 
     return (
-        <a
-            href={href}
+        <Link
+            to={href}
             className="block p-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors duration-200"
         >
             <div className="flex items-center gap-3">
@@ -146,11 +147,12 @@ function ListItem({ title, href, icon: Icon, children, isMobile = false }) {
                     {children && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{children}</p>}
                 </div>
             </div>
-        </a>
+        </Link>
     );
 }
 
 export default function NavbarComp() {
+    const navigate = useNavigate();
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isUserOpen, setIsUserOpen] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -159,18 +161,15 @@ export default function NavbarComp() {
 
     const dropdownRef = useRef(null);
 
-    // Fetch cart items from localStorage or API
+    // Fetch cart items from localStorage
     useEffect(() => {
         const fetchCartItems = () => {
             try {
-                // Try to get cart from localStorage first
                 const savedCart = localStorage.getItem('cart');
                 if (savedCart) {
                     const parsedCart = JSON.parse(savedCart);
                     setCartItems(Array.isArray(parsedCart) ? parsedCart : []);
                 } else {
-                    // If no localStorage, try API (you can implement this)
-                    // fetchCartFromAPI();
                     setCartItems([]);
                 }
             } catch (error) {
@@ -183,7 +182,6 @@ export default function NavbarComp() {
 
         fetchCartItems();
 
-        // Listen for cart updates from other components
         const handleCartUpdate = () => {
             fetchCartItems();
         };
@@ -201,8 +199,6 @@ export default function NavbarComp() {
             const updatedCart = cartItems.filter(item => item.id !== productId);
             setCartItems(updatedCart);
             localStorage.setItem('cart', JSON.stringify(updatedCart));
-
-            // Dispatch event to notify other components
             window.dispatchEvent(new Event('cartUpdated'));
         } catch (error) {
             console.error('Error removing item from cart:', error);
@@ -222,19 +218,22 @@ export default function NavbarComp() {
             );
             setCartItems(updatedCart);
             localStorage.setItem('cart', JSON.stringify(updatedCart));
-
-            // Dispatch event to notify other components
             window.dispatchEvent(new Event('cartUpdated'));
         } catch (error) {
             console.error('Error updating quantity:', error);
         }
     };
 
-    // Clear cart (optional)
-    const clearCart = () => {
-        setCartItems([]);
-        localStorage.removeItem('cart');
-        window.dispatchEvent(new Event('cartUpdated'));
+    // Navigate to cart page
+    const goToCart = () => {
+        setIsCartOpen(false);
+        navigate('/cart');
+    };
+
+    // Navigate to checkout
+    const goToCheckout = () => {
+        setIsCartOpen(false);
+        navigate('/checkout');
     };
 
     useEffect(() => {
@@ -271,47 +270,7 @@ export default function NavbarComp() {
         setIsCartOpen(false);
     };
 
-    // Cart item component
-    const CartItem = ({ item }) => (
-        <div key={item.id} className="flex items-center gap-4 border-b pb-4 last:border-b-0 last:pb-0">
-            <img
-                src={item.image || item.main_image_url || 'https://via.placeholder.com/50'}
-                alt={item.name}
-                className="w-12 h-12 rounded-md object-cover flex-shrink-0"
-            />
-            <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                    {item.name}
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                    ${item.price.toFixed(2)} × {item.quantity}
-                </p>
-                <div className="flex items-center gap-2 mt-1">
-                    <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                    >
-                        <Minus className="w-3 h-3" />
-                    </button>
-                    <span className="text-sm">{item.quantity}</span>
-                    <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                    >
-                        <Plus className="w-3 h-3" />
-                    </button>
-                </div>
-            </div>
-            <button
-                onClick={() => removeFromCart(item.id)}
-                className="text-red-600 hover:text-red-700 dark:text-red-500 transition-colors duration-200 flex-shrink-0"
-            >
-                <X className="w-4 h-4" />
-            </button>
-        </div>
-    );
-
-    // Plus and Minus icons component (add these imports at the top)
+    // Plus and Minus icons component
     const Plus = () => (
         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -324,18 +283,69 @@ export default function NavbarComp() {
         </svg>
     );
 
+    // Cart item component
+    const CartItem = ({ item }) => (
+        <div key={item.id} className="flex items-center gap-4 border-b pb-4 last:border-b-0 last:pb-0">
+            <img
+                src={item.image || 'https://via.placeholder.com/50'}
+                alt={item.name}
+                className="w-12 h-12 rounded-md object-cover flex-shrink-0"
+                onError={(e) => {
+                    e.target.src = 'https://via.placeholder.com/50';
+                }}
+            />
+            <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                    {item.name}
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                    ₦{item.price?.toLocaleString()} × {item.quantity}
+                </p>
+                <div className="flex items-center gap-2 mt-1">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            updateQuantity(item.id, item.quantity - 1);
+                        }}
+                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1"
+                    >
+                        <Minus />
+                    </button>
+                    <span className="text-sm font-medium">{item.quantity}</span>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            updateQuantity(item.id, item.quantity + 1);
+                        }}
+                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1"
+                    >
+                        <Plus />
+                    </button>
+                </div>
+            </div>
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    removeFromCart(item.id);
+                }}
+                className="text-red-600 hover:text-red-700 dark:text-red-500 transition-colors duration-200 flex-shrink-0 p-1"
+            >
+                <X className="w-4 h-4" />
+            </button>
+        </div>
+    );
+
     return (
         <nav className="bg-white dark:bg-gray-800 shadow-sm font-sans">
             <div className="max-w-screen-xl px-4 mx-auto py-4 flex items-center justify-between">
                 {/* Left: Logo + Navigation Menu */}
                 <div className="flex items-center space-x-8">
-                    <a href="/" className="shrink-0 text-2xl font-bold text-primary-700 dark:text-white">
+                    <Link to="/" className="shrink-0 text-2xl font-bold text-primary-700 dark:text-white">
                         TIC
-                    </a>
+                    </Link>
 
                     {/* Desktop Navigation Menu */}
                     <ul className="hidden lg:flex items-center gap-1">
-                        {/* ... (rest of the navigation menu remains the same) */}
                         <NavigationMenuItem title="Home" icon={Home}>
                             <div className="space-y-2">
                                 <ListItem href="/new-arrivals" title="New Arrivals" icon={Zap}>
@@ -394,23 +404,23 @@ export default function NavbarComp() {
                         </NavigationMenuItem>
 
                         <li>
-                            <a
-                                href="/today-deals"
+                            <Link
+                                to="/today-deals"
                                 className="flex items-center gap-1 text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 transition-colors duration-200 py-2 px-3 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20"
                             >
                                 <Zap className="w-4 h-4" />
                                 Today's Deals
-                            </a>
+                            </Link>
                         </li>
 
                         <li>
-                            <a
-                                href="/sell"
+                            <Link
+                                to="/sell"
                                 className="flex items-center gap-1 text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 transition-colors duration-200 py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20"
                             >
                                 <Store className="w-4 h-4" />
                                 Sell
-                            </a>
+                            </Link>
                         </li>
                     </ul>
                 </div>
@@ -444,6 +454,12 @@ export default function NavbarComp() {
                                     <div className="text-center py-6">
                                         <ShoppingCart className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                                         <p className="text-sm text-gray-500 dark:text-gray-400">Your cart is empty</p>
+                                        <button
+                                            onClick={goToCart}
+                                            className="mt-4 w-full rounded-lg bg-primary-700 px-5 py-2.5 text-sm font-medium text-white text-center hover:bg-primary-800 transition-colors duration-200"
+                                        >
+                                            View Cart
+                                        </button>
                                     </div>
                                 ) : (
                                     <>
@@ -453,17 +469,25 @@ export default function NavbarComp() {
                                             ))}
                                         </div>
 
-                                        <div className="mt-4 border-t pt-4">
-                                            <div className="flex justify-between text-sm font-medium text-gray-900 dark:text-white mb-3">
+                                        <div className="mt-4 border-t pt-4 space-y-3">
+                                            <div className="flex justify-between text-sm font-medium text-gray-900 dark:text-white">
                                                 <span>Subtotal</span>
-                                                <span>${subtotal.toFixed(2)}</span>
+                                                <span>₦{subtotal.toLocaleString()}</span>
                                             </div>
-                                            <a
-                                                href="/cart"
-                                                className="block w-full rounded-lg bg-primary-700 px-5 py-2.5 text-sm font-medium text-white text-center hover:bg-primary-800 transition-colors duration-200"
+
+                                            <button
+                                                onClick={goToCart}
+                                                className="w-full rounded-lg bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 px-5 py-2.5 text-sm font-medium text-gray-900 dark:text-white text-center transition-colors duration-200"
                                             >
-                                                View Cart & Checkout
-                                            </a>
+                                                View Cart
+                                            </button>
+
+                                            <button
+                                                onClick={goToCheckout}
+                                                className="w-full rounded-lg bg-primary-700 px-5 py-2.5 text-sm font-medium text-white text-center hover:bg-primary-800 transition-colors duration-200"
+                                            >
+                                                Proceed to Checkout
+                                            </button>
                                         </div>
                                     </>
                                 )}
@@ -486,22 +510,22 @@ export default function NavbarComp() {
                                 <ul className="p-2 text-sm font-medium text-gray-900 dark:text-white">
                                     {["My Account", "My Orders", "Settings", "Favourites"].map((item) => (
                                         <li key={item}>
-                                            <a
-                                                href="#"
+                                            <Link
+                                                to={`/${item.toLowerCase().replace(' ', '-')}`}
                                                 className="block rounded-md px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
                                             >
                                                 {item}
-                                            </a>
+                                            </Link>
                                         </li>
                                     ))}
                                 </ul>
                                 <div className="p-2">
-                                    <a
-                                        href="#"
+                                    <Link
+                                        to="/logout"
                                         className="block rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white transition-colors duration-200"
                                     >
                                         Sign Out
-                                    </a>
+                                    </Link>
                                 </div>
                             </div>
                         )}
@@ -521,7 +545,6 @@ export default function NavbarComp() {
             {isMobileOpen && (
                 <div className="lg:hidden border-t border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-700">
                     <ul className="space-y-1 p-4">
-                        {/* ... (mobile menu remains the same) */}
                         <NavigationMenuItem title="Home" icon={Home} isMobile>
                             <ListItem href="/new-arrivals" title="New Arrivals" isMobile />
                             <ListItem href="/featured" title="Featured Products" isMobile />
@@ -565,23 +588,23 @@ export default function NavbarComp() {
                         </NavigationMenuItem>
 
                         <li>
-                            <a
-                                href="/today-deals"
+                            <Link
+                                to="/today-deals"
                                 className="flex items-center gap-2 py-2 px-4 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-md transition-colors duration-200"
                             >
                                 <Zap className="w-4 h-4" />
                                 Today's Deals
-                            </a>
+                            </Link>
                         </li>
 
                         <li>
-                            <a
-                                href="/sell"
+                            <Link
+                                to="/sell"
                                 className="flex items-center gap-2 py-2 px-4 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-md transition-colors duration-200"
                             >
                                 <Store className="w-4 h-4" />
                                 Sell
-                            </a>
+                            </Link>
                         </li>
                     </ul>
                 </div>
