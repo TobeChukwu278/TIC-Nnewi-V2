@@ -2,6 +2,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Heart, ShoppingCart, Star, ArrowRight, ArrowLeft, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import ProductOverviewSkeleton from "./ProductOverviewSkeleton";
+import ProductCard from "../ProductCard";
 
 const ProductOverview = () => {
     const { id } = useParams();
@@ -117,94 +118,6 @@ const ProductOverview = () => {
         </div>
     );
 
-    const ProductCard = ({ product }) => {
-        const [isAddingCard, setIsAddingCard] = useState(false);
-
-        const handleAddToCart = () => {
-            setIsAddingCard(true);
-
-            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            const existingItem = cart.find(item => item.id === product.id);
-
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    quantity: 1,
-                    image: product.main_image_url,
-                    category: product.category,
-                });
-            }
-
-            localStorage.setItem('cart', JSON.stringify(cart));
-            window.dispatchEvent(new Event('cartUpdated'));
-
-            setTimeout(() => setIsAddingCard(false), 500);
-        };
-
-        return (
-            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
-                <Link to={`/product/${product.id}`} className="block flex-shrink-0">
-                    <div className="relative pt-[75%]">
-                        <img
-                            src={product.main_image_url || 'https://via.placeholder.com/300x225?text=No+Image'}
-                            alt={product.name}
-                            className="absolute top-0 left-0 w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                            onError={(e) => {
-                                e.target.src = 'https://via.placeholder.com/300x225?text=No+Image';
-                            }}
-                        />
-                    </div>
-                </Link>
-                <div className="p-4 flex flex-col flex-grow">
-                    <Link to={`/product/${product.id}`} className="block">
-                        <h3 className="font-semibold text-lg mb-2 hover:text-blue-600 transition-colors line-clamp-2 min-h-[3.5rem]">
-                            {product.name}
-                        </h3>
-                    </Link>
-                    <div className="flex items-center gap-1 mb-2">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                                key={i}
-                                className={`w-3 h-3 ${i < Math.round(product.rating || 0)
-                                    ? "text-yellow-300 fill-yellow-300"
-                                    : "text-gray-300"
-                                    }`}
-                            />
-                        ))}
-                        <span className="text-xs text-gray-500">
-                            ({product.rating ? product.rating.toFixed(1) : 'N/A'})
-                        </span>
-                    </div>
-                    <p className="text-green-600 font-bold text-lg mb-3 mt-auto">₦{product.price?.toLocaleString()}</p>
-                    <div className="flex space-x-2">
-                        <button
-                            onClick={handleAddToCart}
-                            disabled={isAddingCard}
-                            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded text-sm transition-colors flex items-center justify-center disabled:opacity-50"
-                        >
-                            {isAddingCard ? (
-                                'Adding...'
-                            ) : (
-                                <>
-                                    <ShoppingCart className="w-4 h-4 mr-1" />
-                                    <span className="hidden xs:inline">Add to Cart</span>
-                                    <span className="xs:hidden">Add</span>
-                                </>
-                            )}
-                        </button>
-                        <button className="p-2 bg-gray-100 hover:bg-gray-200 rounded transition-colors flex items-center justify-center">
-                            <Heart className="w-4 h-4 text-red-500" />
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
     return (
         <section className="py-4 md:py-8 lg:py-16 bg-white dark:bg-gray-900 antialiased relative">
             {/* Top Navigation Back Button */}
@@ -315,7 +228,7 @@ const ProductOverview = () => {
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 md:mb-6 gap-2">
                             <h2 className="text-xl md:text-2xl font-bold dark:text-white">Similar Products</h2>
                             <Link
-                                to={`/category/${product.category}`}
+                                to={`/products?category=${encodeURIComponent(product.category)}`}
                                 className="flex items-center text-blue-600 hover:text-blue-800 transition-colors text-sm md:text-base"
                             >
                                 View all in {product.category}

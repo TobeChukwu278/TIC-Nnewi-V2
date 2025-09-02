@@ -7,6 +7,7 @@ import Home from './pages/Home'
 import ProductOverview from './components/product-overview/ProductOverview';
 import CategoryPage from './components/CategoryPage';
 import CartPage from './pages/CartPage';
+import ProductsPage from './pages/ProductsPage';
 
 const Layout = () => {
   const location = useLocation();
@@ -21,6 +22,7 @@ const Layout = () => {
         <Route path="/category/:category" element={<CategoryPage />} />
         <Route path="/products/:id" element={<ProductOverview />} />
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/products" element={<ProductsPage />} />
       </Routes>
       <FooterSection />
     </>
