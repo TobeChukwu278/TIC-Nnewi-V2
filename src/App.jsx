@@ -8,24 +8,29 @@ import ProductOverview from './components/product-overview/ProductOverview';
 import CategoryPage from './components/CategoryPage';
 import CartPage from './pages/CartPage';
 import ProductsPage from './pages/ProductsPage';
+import LoginSignup from './LoginSignup';
+import { UserProvider } from './UserContext'
 
 const Layout = () => {
   const location = useLocation();
 
   return (
-    <>
-      <Nav />
-      {/* Only show HeroSlider on homepage */}
-      {location.pathname === "/" && <HeroSlider />}
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/category/:category" element={<CategoryPage />} />
-        <Route path="/products/:id" element={<ProductOverview />} />
-        <Route path="/cart" element={<CartPage />} />
-        <Route path="/products" element={<ProductsPage />} />
-      </Routes>
-      <FooterSection />
-    </>
+    <UserProvider>
+      <>
+        <Nav />
+        {/* Only show HeroSlider on homepage */}
+        {location.pathname === "/" && <HeroSlider />}
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/category/:category" element={<CategoryPage />} />
+          <Route path="/products/:id" element={<ProductOverview />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/login" element={<LoginSignup />} />
+        </Routes>
+        <FooterSection />
+      </>
+    </UserProvider>
   );
 };
 

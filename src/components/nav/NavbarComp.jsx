@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, User, Menu, X, ChevronDown, Home, Grid3X3, Trophy, Gift, Zap, Store, Sprout, HeartPulse, Wrench, Cpu, BookOpen, ChefHat } from "lucide-react";
+import { ShoppingCart, User, Menu, X, ChevronDown, Home, Grid3X3, Trophy, Gift, Zap, Store, Sprout, HeartPulse, Wrench, Cpu, BookOpen, ChefHat, Heart } from "lucide-react";
+import { useUser } from '../../UserContext';
 
 // Categories data
 const categories = [
@@ -151,6 +152,72 @@ function ListItem({ title, href, icon: Icon, children, isMobile = false }) {
     );
 }
 
+// Cart item component - Fixed to have a single parent element
+const CartItem = ({ item, updateQuantity, removeFromCart }) => {
+    const Plus = () => (
+        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+    );
+
+    const Minus = () => (
+        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 12h12" />
+        </svg>
+    );
+
+    return (
+        <div key={item.id} className="flex items-center gap-4 border-b pb-4 last:border-b-0 last:pb-0">
+            <img
+                src={item.image || 'https://via.placeholder.com/50'}
+                alt={item.name}
+                className="w-12 h-12 rounded-md object-cover flex-shrink-0"
+                onError={(e) => {
+                    e.target.src = 'https://via.placeholder.com/50';
+                }}
+            />
+            <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                    {item.name}
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                    ₦{item.price?.toLocaleString()} × {item.quantity}
+                </p>
+                <div className="flex items-center gap-2 mt-1">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            updateQuantity(item.id, item.quantity - 1);
+                        }}
+                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1"
+                    >
+                        <Minus />
+                    </button>
+                    <span className="text-sm font-medium">{item.quantity}</span>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            updateQuantity(item.id, item.quantity + 1);
+                        }}
+                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1"
+                    >
+                        <Plus />
+                    </button>
+                </div>
+            </div>
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    removeFromCart(item.id);
+                }}
+                className="text-red-600 hover:text-red-700 dark:text-red-500 transition-colors duration-200 flex-shrink-0 p-1"
+            >
+                <X className="w-4 h-4" />
+            </button>
+        </div>
+    );
+};
+
 export default function NavbarComp() {
     const navigate = useNavigate();
     const [isCartOpen, setIsCartOpen] = useState(false);
@@ -158,6 +225,9 @@ export default function NavbarComp() {
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [cartItems, setCartItems] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Use UserContext to get authentication state and user info
+    const { isLoggedIn, userEmail, logout } = useUser();
 
     const dropdownRef = useRef(null);
 
@@ -236,6 +306,13 @@ export default function NavbarComp() {
         navigate('/checkout');
     };
 
+    // Handle logout using UserContext
+    const handleLogout = () => {
+        logout();
+        setIsUserOpen(false);
+        navigate('/');
+    };
+
     useEffect(() => {
         function handleClickOutside(event) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -270,70 +347,15 @@ export default function NavbarComp() {
         setIsCartOpen(false);
     };
 
-    // Plus and Minus icons component
-    const Plus = () => (
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-        </svg>
-    );
+    // Profile items for desktop
+    const desktopProfileItems = isLoggedIn
+        ? ["My Account", "My Orders", "Settings", "Wishlist"]
+        : ["Login/Register"];
 
-    const Minus = () => (
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 12h12" />
-        </svg>
-    );
-
-    // Cart item component
-    const CartItem = ({ item }) => (
-        <div key={item.id} className="flex items-center gap-4 border-b pb-4 last:border-b-0 last:pb-0">
-            <img
-                src={item.image || 'https://via.placeholder.com/50'}
-                alt={item.name}
-                className="w-12 h-12 rounded-md object-cover flex-shrink-0"
-                onError={(e) => {
-                    e.target.src = 'https://via.placeholder.com/50';
-                }}
-            />
-            <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                    {item.name}
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                    ₦{item.price?.toLocaleString()} × {item.quantity}
-                </p>
-                <div className="flex items-center gap-2 mt-1">
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            updateQuantity(item.id, item.quantity - 1);
-                        }}
-                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1"
-                    >
-                        <Minus />
-                    </button>
-                    <span className="text-sm font-medium">{item.quantity}</span>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            updateQuantity(item.id, item.quantity + 1);
-                        }}
-                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1"
-                    >
-                        <Plus />
-                    </button>
-                </div>
-            </div>
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    removeFromCart(item.id);
-                }}
-                className="text-red-600 hover:text-red-700 dark:text-red-500 transition-colors duration-200 flex-shrink-0 p-1"
-            >
-                <X className="w-4 h-4" />
-            </button>
-        </div>
-    );
+    // Profile items for mobile - includes Wishlist
+    const mobileProfileItems = isLoggedIn
+        ? ["My Account", "My Orders", "Settings", "Wishlist", "Wishlist"]
+        : ["Login/Register"];
 
     return (
         <nav className="bg-white dark:bg-gray-800 shadow-sm font-sans">
@@ -465,7 +487,12 @@ export default function NavbarComp() {
                                     <>
                                         <div className="space-y-4">
                                             {cartItems.map((item) => (
-                                                <CartItem key={item.id} item={item} />
+                                                <CartItem
+                                                    key={item.id}
+                                                    item={item}
+                                                    updateQuantity={updateQuantity}
+                                                    removeFromCart={removeFromCart}
+                                                />
                                             ))}
                                         </div>
 
@@ -502,31 +529,52 @@ export default function NavbarComp() {
                             className="inline-flex items-center rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium text-gray-900 dark:text-white transition-colors duration-200"
                         >
                             <User className="w-5 h-5 me-1" />
-                            <span className="hidden md:flex">Account</span>
+                            <span className="hidden md:flex">
+                                {isLoggedIn ? (userEmail || 'Account') : 'Login'}
+                            </span>
                         </button>
 
                         {isUserOpen && (
                             <div className="absolute top-12 right-0 w-56 divide-y divide-gray-100 rounded-lg bg-white shadow-xl dark:divide-gray-600 dark:bg-gray-700 z-50">
+                                {isLoggedIn && userEmail && (
+                                    <div className="p-4 border-b border-gray-200 dark:border-gray-600">
+                                        <p className="text-sm font-medium text-gray-900 dark:text-white">Hello, {userEmail.split('@')[0]}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{userEmail}</p>
+                                    </div>
+                                )}
                                 <ul className="p-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    {["My Account", "My Orders", "Settings", "Favourites"].map((item) => (
+                                    {desktopProfileItems.map((item) => (
                                         <li key={item}>
-                                            <Link
-                                                to={`/${item.toLowerCase().replace(' ', '-')}`}
-                                                className="block rounded-md px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-                                            >
-                                                {item}
-                                            </Link>
+                                            {item === "Login/Register" ? (
+                                                <Link
+                                                    to="/login"
+                                                    className="block rounded-md px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+                                                    onClick={() => setIsUserOpen(false)}
+                                                >
+                                                    {item}
+                                                </Link>
+                                            ) : (
+                                                <Link
+                                                    to={`/${item.toLowerCase().replace(' ', '-')}`}
+                                                    className="block rounded-md px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+                                                    onClick={() => setIsUserOpen(false)}
+                                                >
+                                                    {item}
+                                                </Link>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>
-                                <div className="p-2">
-                                    <Link
-                                        to="/logout"
-                                        className="block rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white transition-colors duration-200"
-                                    >
-                                        Sign Out
-                                    </Link>
-                                </div>
+                                {isLoggedIn && (
+                                    <div className="p-2">
+                                        <button
+                                            onClick={handleLogout}
+                                            className="block w-full text-left rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white transition-colors duration-200"
+                                        >
+                                            Sign Out
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -605,6 +653,64 @@ export default function NavbarComp() {
                                 <Store className="w-4 h-4" />
                                 Sell
                             </Link>
+                        </li>
+
+                        {/* Mobile Profile Menu */}
+                        <li className="pt-4 border-t border-gray-200 dark:border-gray-600 mt-4">
+                            <h3 className="px-4 py-2 text-sm font-medium text-gray-900 dark:text-white">Account</h3>
+                            {isLoggedIn && userEmail && (
+                                <div className="px-4 py-2">
+                                    <p className="text-sm text-gray-700 dark:text-gray-300">Hello, {userEmail.split('@')[0]}</p>
+                                </div>
+                            )}
+                            <ul className="mt-2 space-y-1">
+                                {mobileProfileItems.map((item) => (
+                                    <li key={item}>
+                                        {item === "Wishlist" ? (
+                                            <Link
+                                                to="/wishlist"
+                                                className="flex items-center gap-2 py-2 px-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md transition-colors duration-200"
+                                                onClick={() => setIsMobileOpen(false)}
+                                            >
+                                                <Heart className="w-4 h-4" />
+                                                {item}
+                                            </Link>
+                                        ) : item === "Login/Register" ? (
+                                            <Link
+                                                to="/login"
+                                                className="flex items-center gap-2 py-2 px-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md transition-colors duration-200"
+                                                onClick={() => setIsMobileOpen(false)}
+                                            >
+                                                <User className="w-4 h-4" />
+                                                {item}
+                                            </Link>
+                                        ) : (
+                                            <Link
+                                                to={`/${item.toLowerCase().replace(' ', '-')}`}
+                                                className="flex items-center gap-2 py-2 px-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md transition-colors duration-200"
+                                                onClick={() => setIsMobileOpen(false)}
+                                            >
+                                                <User className="w-4 h-4" />
+                                                {item}
+                                            </Link>
+                                        )}
+                                    </li>
+                                ))}
+                                {isLoggedIn && (
+                                    <li>
+                                        <button
+                                            onClick={() => {
+                                                handleLogout();
+                                                setIsMobileOpen(false);
+                                            }}
+                                            className="flex items-center gap-2 w-full py-2 px-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md transition-colors duration-200"
+                                        >
+                                            <User className="w-4 h-4" />
+                                            Sign Out
+                                        </button>
+                                    </li>
+                                )}
+                            </ul>
                         </li>
                     </ul>
                 </div>

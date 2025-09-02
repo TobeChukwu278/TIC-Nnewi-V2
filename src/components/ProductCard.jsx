@@ -13,6 +13,7 @@ import {
 // ✅ Product Card Component
 const ProductCard = ({ product }) => {
     const [isAdding, setIsAdding] = useState(false);
+    const [imageError, setImageError] = useState(false);
 
     const addToCart = () => {
         setIsAdding(true);
@@ -34,10 +35,8 @@ const ProductCard = ({ product }) => {
                 price: product.price,
                 quantity: 1,
                 image: product.main_image_url || product.image,
-                // Add any other simple data types you need
                 discount_price: product.discount_price,
-                rating: product.rating,
-                // Do NOT include React components or complex objects
+                rating: product.rating
             });
         }
 
@@ -53,6 +52,14 @@ const ProductCard = ({ product }) => {
         console.log('Product added to cart:', product.name);
     };
 
+    // Handle image error
+    const handleImageError = (e) => {
+        if (!imageError) {
+            setImageError(true);
+            e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSIjODg4ODg4Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
+        }
+    };
+
     // Calculate discount percentage safely
     const discountPercentage = product.discount_price && product.price
         ? Math.round(((product.price - product.discount_price) / product.price) * 100)
@@ -64,19 +71,21 @@ const ProductCard = ({ product }) => {
             <Link to={`/products/${product.id}`} className="block h-56 w-full">
                 <img
                     className="mx-auto h-full w-full object-contain dark:hidden"
-                    src={product.main_image_url || 'https://via.placeholder.com/300x300?text=No+Image'}
+                    src={imageError
+                        ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSIjODg4ODg4Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='
+                        : product.main_image_url || product.image
+                    }
                     alt={product.name || 'Product image'}
-                    onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
-                    }}
+                    onError={handleImageError}
                 />
                 <img
                     className="mx-auto hidden h-full w-full object-contain dark:block"
-                    src={product.main_image_url || 'https://via.placeholder.com/300x300?text=No+Image'}
+                    src={imageError
+                        ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSIjNzc3Nzc3Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='
+                        : product.main_image_url || product.image
+                    }
                     alt={product.name || 'Product image'}
-                    onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
-                    }}
+                    onError={handleImageError}
                 />
             </Link>
 
@@ -115,8 +124,8 @@ const ProductCard = ({ product }) => {
                             <Star
                                 key={index}
                                 className={`h-4 w-4 ${index < Math.floor(product.rating || 0)
-                                        ? "text-yellow-400 fill-yellow-400"
-                                        : "text-gray-300"
+                                    ? "text-yellow-400 fill-yellow-400"
+                                    : "text-gray-300"
                                     }`}
                             />
                         ))}
