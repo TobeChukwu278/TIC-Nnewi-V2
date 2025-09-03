@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import {
     Menubar,
     MenubarContent,
@@ -20,8 +21,12 @@ export default function StoreMenubar() {
             <MenubarMenu>
                 <MenubarTrigger>My Account</MenubarTrigger>
                 <MenubarContent>
-                    <MenubarItem>Login</MenubarItem>
-                    <MenubarItem>Register</MenubarItem>
+                    <MenubarItem>
+                        <Link to='/login'>Login</Link>
+                    </MenubarItem>
+                    <MenubarItem>
+                        <Link to='/login'>Register</Link>
+                    </MenubarItem>
                     <MenubarItem>Profile</MenubarItem>
                 </MenubarContent>
             </MenubarMenu>
@@ -29,7 +34,9 @@ export default function StoreMenubar() {
             <MenubarMenu>
                 <MenubarTrigger>Wishlist</MenubarTrigger>
                 <MenubarContent>
-                    <MenubarItem>View Wishlist</MenubarItem>
+                    <MenubarItem>
+                        <Link to='/wishlist'>View Wishlist</Link>
+                    </MenubarItem>
                 </MenubarContent>
             </MenubarMenu>
 

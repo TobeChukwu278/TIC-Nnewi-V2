@@ -10,6 +10,7 @@ import CartPage from './pages/CartPage';
 import ProductsPage from './pages/ProductsPage';
 import LoginSignup from './LoginSignup';
 import { UserProvider } from './UserContext'
+import FavoritesPage from './components/favourite/FavouritePage'
 
 const Layout = () => {
   const location = useLocation();
@@ -27,6 +28,7 @@ const Layout = () => {
           <Route path="/cart" element={<CartPage />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/login" element={<LoginSignup />} />
+          <Route path="/wishlist" element={<FavoritesPage />} />
         </Routes>
         <FooterSection />
       </>

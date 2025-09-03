@@ -9,11 +9,15 @@ import {
     BadgeCheck,
     ShoppingCart,
 } from "lucide-react";
+import FavouriteButton from "./favourite/FavouriteButton";
 
 // ✅ Product Card Component
 const ProductCard = ({ product }) => {
     const [isAdding, setIsAdding] = useState(false);
     const [imageError, setImageError] = useState(false);
+
+    console.log('ProductCard product:', product);
+    console.log('Product ID:', product?.id);
 
     const addToCart = () => {
         setIsAdding(true);
@@ -104,7 +108,7 @@ const ProductCard = ({ product }) => {
                         </button>
                         <button className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                             <span className="sr-only">Add to Favorites</span>
-                            <Heart className="h-5 w-5" />
+                            < FavouriteButton productId={product.id} />
                         </button>
                     </div>
                 </div>

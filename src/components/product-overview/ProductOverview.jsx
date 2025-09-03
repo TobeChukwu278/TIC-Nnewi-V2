@@ -3,6 +3,7 @@ import { Heart, ShoppingCart, Star, ArrowRight, ArrowLeft, X } from "lucide-reac
 import { useState, useEffect } from "react";
 import ProductOverviewSkeleton from "./ProductOverviewSkeleton";
 import ProductCard from "../ProductCard";
+import FavouriteButton from "../favourite/FavouriteButton";
 
 const ProductOverview = () => {
     const { id } = useParams();
@@ -150,9 +151,9 @@ const ProductOverview = () => {
                                     className="absolute top-0 left-0 w-full h-full object-contain rounded-lg shadow-md"
                                     src={product.main_image_url || 'https://via.placeholder.com/500x500?text=No+Image'}
                                     alt={product.name}
-                                    onError={(e) => {
-                                        e.target.src = 'https://via.placeholder.com/500x500?text=No+Image';
-                                    }}
+                                // onError={(e) => {
+                                //     e.target.src = 'https://via.placeholder.com/500x500?text=No+Image';
+                                // }}
                                 />
                             </div>
                         </div>
@@ -191,10 +192,11 @@ const ProductOverview = () => {
 
                         {/* Actions - Stack on mobile, row on larger screens */}
                         <div className="flex flex-col sm:flex-row gap-3">
-                            <button className="flex items-center justify-center px-4 py-3 border rounded-lg hover:bg-gray-50 transition-colors flex-1">
-                                <Heart className="w-5 h-5 mr-2" />
+                            {/* <button className="flex items-center justify-center px-4 py-3 border rounded-lg hover:bg-gray-50 transition-colors flex-1">
+                                <FavouriteButton />
                                 <span className="whitespace-nowrap">Add to favorites</span>
-                            </button>
+                            </button> */}
+                            <FavouriteButton productId={product.id} />
                             <button
                                 onClick={addToCart}
                                 disabled={isAdding}

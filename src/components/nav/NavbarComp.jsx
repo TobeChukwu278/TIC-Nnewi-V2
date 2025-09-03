@@ -297,13 +297,21 @@ export default function NavbarComp() {
     // Navigate to cart page
     const goToCart = () => {
         setIsCartOpen(false);
-        navigate('/cart');
+        if (!isLoggedIn) {
+            navigate('/login');
+        } else {
+            navigate('/cart');
+        }
     };
 
     // Navigate to checkout
     const goToCheckout = () => {
         setIsCartOpen(false);
-        navigate('/checkout');
+        if (!isLoggedIn) {
+            navigate('/login');
+        } else {
+            navigate('/checkout');
+        }
     };
 
     // Handle logout using UserContext
@@ -349,7 +357,7 @@ export default function NavbarComp() {
 
     // Profile items for desktop
     const desktopProfileItems = isLoggedIn
-        ? ["My Account", "My Orders", "Settings", "Wishlist"]
+        ? ["My Account", "My Orders", "Settings"]
         : ["Login/Register"];
 
     // Profile items for mobile - includes Wishlist

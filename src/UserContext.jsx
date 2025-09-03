@@ -5,9 +5,17 @@ const UserContext = createContext(null);
 
 // Create the Provider component to manage the shared state.
 export const UserProvider = ({ children }) => {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [userEmail, setUserEmail] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(() => {
+        const token = localStorage.getItem('authToken');
+        return !!token;
+    });
+    const [userEmail, setUserEmail] = useState(() => {
+        return localStorage.getItem('userEmail');
+    });
 
+    // Sync state with localStorage on mount (in case of manual changes)
+    // This is optional, but ensures state is always correct
+    // useEffect is not strictly necessary here since we use lazy initial state
     // The login function
     const login = (email, token) => {
         setIsLoggedIn(true);

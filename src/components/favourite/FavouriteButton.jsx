@@ -1,70 +1,123 @@
 import { Heart } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { useAuth } from '../context/AuthContext';
-
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../../UserContext';
 
 const FavouriteButton = ({ productId, size = 'medium' }) => {
-
+    const navigate = useNavigate();
     const [isFavourited, setIsFavourited] = useState(false)
     const [loading, setLoading] = useState(false);
-    const { user } = useAuth();
+    const { isLoggedIn, userEmail } = useUser();
 
+    // Size classes for the button container
     const sizeClasses = {
-        small: 'w-8 h-8',
-        medium: 'w-10 h-10',
-        large: 'w-12 h-12'
+        small: 'w-6 h-6',
+        medium: 'w-8 h-8',
+        large: 'w-10 h-10'
+    };
+
+    // Icon sizes based on the button size
+    const iconSizes = {
+        small: 14,
+        medium: 16,
+        large: 18
     };
 
     useEffect(() => {
-        if (user) {
+        // Only check favorite status if we have a valid productId and user is logged in
+        if (productId && isLoggedIn && userEmail) {
             checkFavouriteStatus();
         }
-    }, [user, productId]);
+    }, [isLoggedIn, userEmail, productId]);
 
     const checkFavouriteStatus = async () => {
+        if (!productId) return;
+
         try {
-            const response = await fetch(`/api/user/auth/favourites/check/${productId}`, {
+            console.log('Checking favourite status for:', { productId, userEmail });
+            const response = await fetch(`http://localhost:3001/api/user/auth/favorites/check/${productId}`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                 }
             })
-            const data = await response.json();
-            setIsFavourited(data.isFavourited);
+
+            if (response.ok) {
+                const data = await response.json();
+                setIsFavourited(data.isFavourited);
+                console.log('Favourite status response:', data);
+            }
         } catch (error) {
             console.error('Error checking favourite status:', error)
         }
     }
 
     const toggleFavourite = async () => {
-        if (!user) {
-            alert('Please login to add to favourite');
+        if (!productId) {
+            console.error('No productId provided for favorite toggle');
             return;
         }
 
-        setLoading(true)
+        if (!isLoggedIn) {
+            navigate('/login');
+            return;
+        }
+
+        setLoading(true);
 
         try {
             if (isFavourited) {
-                await fetch(`/api/user/auth/favourites/${productId}`, {
+                console.log('Sending POST/DELETE request for favourite:', { productId, userEmail });
+                await fetch(`http://localhost:3001/api/user/auth/favorites/${productId}`, {
                     method: 'DELETE',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
-                setIsFavourited(false)
+                setIsFavourited(false);
             } else {
-                await fetch(`/api/user/auth/favourites/${productId}`, {
+                await fetch(`http://localhost:3001/api/user/auth/favorites/${productId}`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
-                setIsFavourited(true)
+                setIsFavourited(true);
             }
         } catch (error) {
-            console.error('Error adding to favourite:', error);
+            console.error('Error toggling favourite:', error);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
+    }
+
+    // If productId is undefined, show a disabled button
+    if (!productId) {
+        return (
+            <button
+                disabled
+                className={`
+                    ${sizeClasses[size]}
+                    flex items-center justify-center rounded-full border border-gray-300 bg-gray-100 text-gray-400 opacity-50 cursor-not-allowed
+                `}
+            >
+                <Heart size={iconSizes[size]} />
+            </button>
+        );
+    }
+
+    // If user is not logged in, show a button that redirects to login
+    if (!isLoggedIn) {
+        return (
+            <button
+                onClick={() => navigate('/login')}
+                className={`
+                    ${sizeClasses[size]}
+                    flex items-center justify-center rounded-full border border-gray-300 bg-white text-gray-400 hover:border-red-300 hover:text-red-400 cursor-pointer transition-all duration-200
+                `}
+            >
+                <Heart size={iconSizes[size]} />
+            </button>
+        );
     }
 
     return (
@@ -72,10 +125,19 @@ const FavouriteButton = ({ productId, size = 'medium' }) => {
             onClick={toggleFavourite}
             disabled={loading}
             className={`
-    ${sizeClasses[size]}
-    flex items-center jsutify-center rounded-full border transition-all duration-200 ${isFavourited ? 'bg-red-500 border-red-500 text-white' : 'bg-white border-gray-300 text-gary-400 hover:border-red-300 hover:text-red-400'}
-    ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} `} >
-            <Heart className={isFavourited ? 'fill-current' : ''} size={size === 'small' ? 16 : 20} />
+                ${sizeClasses[size]}
+                flex items-center justify-center rounded-full border transition-all duration-200 
+                ${isFavourited
+                    ? 'bg-red-500 border-red-500 text-white'
+                    : 'bg-white border-gray-300 text-gray-400 hover:border-red-300 hover:text-red-400'
+                }
+                ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} 
+            `}
+        >
+            <Heart
+                className={isFavourited ? 'fill-current' : ''}
+                size={iconSizes[size]}
+            />
         </button>
     )
 }
