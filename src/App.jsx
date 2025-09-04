@@ -11,6 +11,8 @@ import ProductsPage from './pages/ProductsPage';
 import LoginSignup from './LoginSignup';
 import { UserProvider } from './UserContext'
 import FavoritesPage from './components/favourite/FavouritePage'
+import CheckoutSummary from './components/CheckoutSummary';
+import OrderConfirmation from './components/OrderConfirmation';
 
 const Layout = () => {
   const location = useLocation();
@@ -29,6 +31,8 @@ const Layout = () => {
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/login" element={<LoginSignup />} />
           <Route path="/wishlist" element={<FavoritesPage />} />
+          <Route path="/checkout" element={<CheckoutSummary />} />
+          <Route path="/order-confirmation" element={<OrderConfirmation />} />
         </Routes>
         <FooterSection />
       </>
