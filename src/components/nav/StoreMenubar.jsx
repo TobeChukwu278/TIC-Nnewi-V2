@@ -43,7 +43,9 @@ export default function StoreMenubar() {
             <MenubarMenu>
                 <MenubarTrigger>Order Tracking</MenubarTrigger>
                 <MenubarContent>
-                    <MenubarItem>Track My Order</MenubarItem>
+                    <MenubarItem>
+                        <Link to='/order-tracking'>Track My Order</Link>
+                    </MenubarItem>
                 </MenubarContent>
             </MenubarMenu>
         </Menubar>

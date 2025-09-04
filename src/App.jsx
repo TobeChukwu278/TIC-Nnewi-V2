@@ -13,6 +13,8 @@ import { UserProvider } from './UserContext'
 import FavoritesPage from './components/favourite/FavouritePage'
 import CheckoutSummary from './components/CheckoutSummary';
 import OrderConfirmation from './components/OrderConfirmation';
+import OrderTracking from './components/OrderTracking';
+import OrderList from './components/OrderList';
 
 const Layout = () => {
   const location = useLocation();
@@ -33,6 +35,8 @@ const Layout = () => {
           <Route path="/wishlist" element={<FavoritesPage />} />
           <Route path="/checkout" element={<CheckoutSummary />} />
           <Route path="/order-confirmation" element={<OrderConfirmation />} />
+          <Route path="/order-tracking" element={<OrderTracking />} />
+          <Route path="/my-orders" element={<OrderList />} />
         </Routes>
         <FooterSection />
       </>
