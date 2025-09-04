@@ -15,6 +15,7 @@ import CheckoutSummary from './components/CheckoutSummary';
 import OrderConfirmation from './components/OrderConfirmation';
 import OrderTracking from './components/OrderTracking';
 import OrderList from './components/OrderList';
+import AccountOverview from './components/AccountOverview'
 
 const Layout = () => {
   const location = useLocation();
@@ -37,6 +38,7 @@ const Layout = () => {
           <Route path="/order-confirmation" element={<OrderConfirmation />} />
           <Route path="/order-tracking" element={<OrderTracking />} />
           <Route path="/my-orders" element={<OrderList />} />
+          <Route path="/my-account" element={<AccountOverview />} />
         </Routes>
         <FooterSection />
       </>
