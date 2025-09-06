@@ -185,9 +185,9 @@ const CartPage = () => {
                         src={item.image || item.main_image_url || 'https://via.placeholder.com/80x80?text=No+Image'}
                         alt={item.name}
                         className="h-20 w-20 object-contain rounded-lg"
-                        onError={(e) => {
-                            e.target.src = 'https://via.placeholder.com/80x80?text=No+Image';
-                        }}
+                    // onError={(e) => {
+                    //     e.target.src = 'https://via.placeholder.com/80x80?text=No+Image';
+                    // }}
                     />
                 </div>
 

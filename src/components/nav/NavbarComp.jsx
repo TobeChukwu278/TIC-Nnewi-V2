@@ -6,45 +6,75 @@ import { useUser } from '../../UserContext';
 // Categories data
 const categories = [
     {
-        title: 'Agro-Allied',
-        href: '/category/agro-allied',
-        icon: Sprout,
+        title: 'Food Processing',
+        href: '/category/food-processing',
+        icon: ChefHat,
         description: 'Agricultural products and farming equipment',
     },
     {
-        title: 'Cosmetics',
-        href: '/category/cosmetics',
+        title: 'Medicals',
+        href: '/category/medicals',
         icon: HeartPulse,
         description: 'Beauty products and personal care',
     },
     {
-        title: 'Fabrication',
-        href: '/category/fabrication',
+        title: 'Engineering Fabrication',
+        href: '/category/engineering-fabrication',
         icon: Wrench,
         description: 'Metal works and construction materials',
     },
     {
-        title: 'Auto Spare Parts',
-        href: '/category/autospare-parts',
+        title: 'Automobile',
+        href: '/category/automobile',
         icon: Cpu,
         description: 'Automotive parts and accessories',
     },
     {
-        title: 'Technology Gadgets',
-        href: '/category/technology-gadgets',
+        title: 'Controls and Computers',
+        href: '/category/controls-and-computers',
         icon: BookOpen,
         description: 'Electronics and tech accessories',
     },
     {
-        title: 'Leather Works',
-        href: '/category/leather-works',
+        title: 'Leather and Craft',
+        href: '/category/leather-and-crafts',
         icon: BookOpen,
         description: 'Leather goods and accessories',
     },
     {
-        title: 'Food Processing',
-        href: '/category/food-processing',
-        icon: ChefHat,
+        title: 'Essential Oils',
+        href: '/category/essential-oils',
+        icon: Sprout,
+        description: 'Food items and kitchen supplies',
+    },
+    {
+        title: 'Metallurgy',
+        href: '/category/metallurgy',
+        icon: Sprout,
+        description: 'Food items and kitchen supplies',
+    },
+    {
+        title: 'Solid Mineral/Building Materials',
+        href: '/category/solid-mineral/building-materials',
+        icon: Sprout,
+        description: 'Food items and kitchen supplies',
+    },
+    {
+        title: 'Waste Recycling',
+        href: '/category/waste-recycling',
+        icon: Sprout,
+        description: 'Food items and kitchen supplies',
+    },
+    {
+        title: 'Energy',
+        href: '/category/energy',
+        icon: Sprout,
+        description: 'Food items and kitchen supplies',
+    },
+    {
+        title: 'Chemical Processes',
+        href: '/category/chemical-processes',
+        icon: Sprout,
         description: 'Food items and kitchen supplies',
     },
 ];
@@ -172,9 +202,9 @@ const CartItem = ({ item, updateQuantity, removeFromCart }) => {
                 src={item.image || 'https://via.placeholder.com/50'}
                 alt={item.name}
                 className="w-12 h-12 rounded-md object-cover flex-shrink-0"
-                onError={(e) => {
-                    e.target.src = 'https://via.placeholder.com/50';
-                }}
+            // onError={(e) => {
+            //     e.target.src = 'https://via.placeholder.com/50';
+            // }}
             />
             <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">

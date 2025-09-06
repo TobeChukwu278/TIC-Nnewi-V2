@@ -34,11 +34,10 @@ const CheckoutSummary = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        state: 'Lagos',
-        city: 'Ikeja',
+        state: 'Anambra',
+        city: 'Nnewi',
         address: '',
         phone: '',
-        company: '',
         additionalInfo: ''
     });
 
@@ -140,16 +139,6 @@ const CheckoutSummary = () => {
             return;
         }
 
-        // Save user data for order confirmation
-        const userData = {
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            address: `${formData.address}, ${formData.city}, ${formData.state}`,
-            company: formData.company,
-            additionalInfo: formData.additionalInfo
-        };
-
         // Generate order data
         const orderData = {
             id: `#${Math.floor(1000000 + Math.random() * 9000000)}`,
@@ -165,43 +154,86 @@ const CheckoutSummary = () => {
             tax: tax,
             deliveryFee: deliveryFee,
             total: total,
-            ...userData
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            address: `${formData.address}, ${formData.city}, ${formData.state}`,
+            additionalInfo: formData.additionalInfo
         };
 
         // Save order and user data to localStorage
-        localStorage.setItem('userData', JSON.stringify(userData));
         localStorage.setItem('orderData', JSON.stringify(orderData));
 
-        // Simulate payment processing
+        // Save to user orders
+        const existingOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+        const updatedOrders = [orderData, ...existingOrders];
+        localStorage.setItem('userOrders', JSON.stringify(updatedOrders));
+
         try {
-            // In a real application, you would integrate with a payment gateway here
-            console.log('Processing payment with:', {
-                formData,
-                paymentMethod,
-                deliveryMethod,
-                total
+            // Get authentication token from wherever it's stored
+            const token = localStorage.getItem('authToken'); // Adjust based on your auth setup
+
+            // Send order to backend API
+            const response = await fetch(`http://localhost:3001/api/user/auth/orders`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    items: cartItems.map(item => ({
+                        productId: item.id,
+                        name: item.name,
+                        quantity: item.quantity,
+                        price: item.price,
+                        image: item.image || ''
+                    })),
+                    total: total,
+                    shippingAddress: {
+                        name: formData.name,
+                        email: formData.email,
+                        phone: formData.phone,
+                        address: formData.address,
+                        city: formData.city,
+                        state: formData.state,
+                        country: 'Nigeria',
+                        additionalInfo: formData.additionalInfo
+                    },
+                    paymentMethod: paymentMethod
+                })
             });
 
-            // Simulate API call delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to create order');
+            }
 
+            const result = await response.json();
+
+            // Clear the cart after successful order
             localStorage.removeItem('cart');
-
-            // Also clear the checkout form data
-            // localStorage.removeItem('checkoutFormData');
-
-            // Update local state to reflect empty cart
+            localStorage.removeItem('checkoutFormData');
             setCartItems([]);
-
-            // Dispatch event to notify other components about cart update
             window.dispatchEvent(new Event('cartUpdated'));
 
-            // Payment successful - navigate to confirmation page
-            navigate('/order-confirmation', { state: orderData });
+            // Navigate to confirmation page with both local and server data
+            navigate('/order-confirmation', {
+                state: { ...orderData, serverId: result.orderId || result.id }
+            });
 
         } catch (error) {
-            console.error('Payment error:', error);
-            alert('There was an error processing your payment. Please try again.');
+            console.error('Order creation error:', error);
+
+            // Fallback: complete order locally if API fails
+            localStorage.removeItem('cart');
+            localStorage.removeItem('checkoutFormData');
+            setCartItems([]);
+            window.dispatchEvent(new Event('cartUpdated'));
+
+            // Show warning but still proceed
+            alert('Order was created locally. There was an issue connecting to the server: ' + error.message);
+
+            navigate('/order-confirmation', { state: orderData });
         } finally {
             setIsProcessing(false);
         }
@@ -379,7 +411,7 @@ const CheckoutSummary = () => {
                                     />
                                 </div>
 
-                                <div>
+                                {/* <div>
                                     <label htmlFor="company" className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
                                         <Building className="inline-block h-4 w-4 mr-1" />
                                         Company Name
@@ -393,7 +425,7 @@ const CheckoutSummary = () => {
                                         className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                                         placeholder="Your Company Ltd"
                                     />
-                                </div>
+                                </div> */}
 
                                 <div className="sm:col-span-2">
                                     <label htmlFor="additionalInfo" className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">

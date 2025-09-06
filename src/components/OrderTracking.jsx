@@ -9,39 +9,68 @@ const OrderTracking = () => {
     const [userOrders, setUserOrders] = useState([]);
     const navigate = useNavigate();
 
-    // Load order data from localStorage
+    // Get token from localStorage or your auth context
+    const token = localStorage.getItem('authToken'); // Adjust based on your auth setup
+
+    // Load order data
     useEffect(() => {
         const loadOrderData = () => {
             try {
-                // In a real app, this would be an API call to your backend
-                const savedOrder = localStorage.getItem('orderData');
-                const allOrders = localStorage.getItem('userOrders');
-
-                if (savedOrder) {
-                    const orderData = JSON.parse(savedOrder);
-
-                    // If we're looking at a specific order and it matches
-                    if (orderId && orderData.id === orderId) {
-                        setOrder(orderData);
-                    } else if (!orderId) {
-                        // If no order ID specified, show the latest order
-                        setOrder(orderData);
-                    }
+                // Try to get order from API first if we have a token
+                if (orderId && token) {
+                    fetch(`http://localhost:3001/api/user/auth/orders/${orderId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('API request failed');
+                            }
+                            return response.json();
+                        })
+                        .then(orderData => {
+                            setOrder(orderData);
+                            setLoading(false);
+                        })
+                        .catch(error => {
+                            console.error('API error, falling back to localStorage:', error);
+                            fallbackToLocalStorage();
+                        });
+                } else {
+                    fallbackToLocalStorage();
                 }
-
-                if (allOrders) {
-                    setUserOrders(JSON.parse(allOrders));
-                }
-
-                setLoading(false);
             } catch (error) {
                 console.error('Error loading order data:', error);
-                setLoading(false);
+                fallbackToLocalStorage();
             }
         };
 
+        const fallbackToLocalStorage = () => {
+            // Fallback to localStorage
+            const savedOrder = localStorage.getItem('orderData');
+            const allOrders = localStorage.getItem('userOrders');
+
+            if (savedOrder) {
+                const orderData = JSON.parse(savedOrder);
+                // If we have an orderId parameter, check if it matches
+                if (orderId && orderData.id === orderId) {
+                    setOrder(orderData);
+                } else if (!orderId) {
+                    // If no orderId specified, use the saved order
+                    setOrder(orderData);
+                }
+            }
+
+            if (allOrders) {
+                setUserOrders(JSON.parse(allOrders));
+            }
+
+            setLoading(false);
+        };
+
         loadOrderData();
-    }, [orderId]);
+    }, [orderId, token]);
 
     const handleGoBack = () => {
         navigate(-1);
@@ -51,37 +80,63 @@ const OrderTracking = () => {
         navigate('/');
     };
 
-    const handleCancelOrder = () => {
+    const handleCancelOrder = async () => {
         if (!order) return;
 
-        // Update order status to cancelled
-        const updatedOrder = {
-            ...order,
-            status: 'cancelled',
-            history: [
-                ...order.history,
-                {
-                    status: "Order Cancelled",
-                    description: "You've cancelled this order",
-                    date: new Date().toLocaleString(),
-                    icon: "cancel",
-                    active: true
+        try {
+            // Try to cancel order via API if we have a token
+            if (token) {
+                const response = await fetch(`http://localhost:3001/api/user/auth/orders/${order.id}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: 'cancelled' })
+                });
+
+                if (response.ok) {
+                    // Update local state with API response
+                    const updatedOrder = await response.json();
+                    setOrder(updatedOrder);
+                    alert('Your order has been cancelled successfully.');
+                    return;
                 }
-            ]
-        };
+            }
 
-        // Update localStorage
-        localStorage.setItem('orderData', JSON.stringify(updatedOrder));
+            // Fallback to localStorage update if API fails or no token
+            const updatedOrder = {
+                ...order,
+                status: 'cancelled',
+                history: [
+                    ...(order.history || []),
+                    {
+                        status: "Order Cancelled",
+                        description: "You've cancelled this order",
+                        date: new Date().toLocaleString(),
+                        icon: "cancel",
+                        active: true
+                    }
+                ]
+            };
 
-        // Update in orders list
-        const updatedOrders = userOrders.map(ord =>
-            ord.id === order.id ? updatedOrder : ord
-        );
-        localStorage.setItem('userOrders', JSON.stringify(updatedOrders));
-        setUserOrders(updatedOrders);
+            // Update localStorage
+            localStorage.setItem('orderData', JSON.stringify(updatedOrder));
 
-        setOrder(updatedOrder);
-        alert('Your order has been cancelled successfully.');
+            // Update in orders list
+            const updatedOrders = userOrders.map(ord =>
+                ord.id === order.id ? updatedOrder : ord
+            );
+            localStorage.setItem('userOrders', JSON.stringify(updatedOrders));
+            setUserOrders(updatedOrders);
+
+            setOrder(updatedOrder);
+            alert('Your order has been cancelled successfully.');
+
+        } catch (error) {
+            console.error('Error cancelling order:', error);
+            alert('There was an error cancelling your order. Please try again.');
+        }
     };
 
     if (loading) {
@@ -100,7 +155,6 @@ const OrderTracking = () => {
         return (
             <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16">
                 <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
-                    {/* Header with navigation buttons */}
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                         <div className="flex items-center gap-2">
                             <button
@@ -207,23 +261,19 @@ const OrderTracking = () => {
 
                 <div className="mt-6 sm:mt-8 lg:flex lg:gap-8">
                     <div className="w-full divide-y divide-gray-200 overflow-hidden rounded-lg border border-gray-200 dark:divide-gray-700 dark:border-gray-700 lg:max-w-xl xl:max-w-2xl">
-                        {order.items.map((item, index) => (
+                        {order.items && order.items.map((item, index) => (
                             <div key={index} className="space-y-4 p-6">
                                 <div className="flex items-center gap-6">
                                     <div className="h-14 w-14 shrink-0 bg-gray-200 rounded-lg flex items-center justify-center dark:bg-gray-700">
                                         {item.image ? (
-                                            <>
-                                                <img
-                                                    className="h-full w-full dark:hidden"
-                                                    src={item.image}
-                                                    alt={item.name}
-                                                />
-                                                <img
-                                                    className="hidden h-full w-full dark:block"
-                                                    src={item.imageDark || item.image}
-                                                    alt={item.name}
-                                                />
-                                            </>
+                                            <img
+                                                className="h-full w-full object-cover rounded-lg"
+                                                src={item.image}
+                                                alt={item.name}
+                                                onError={(e) => {
+                                                    e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSIjODg4ODg4Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
+                                                }}
+                                            />
                                         ) : (
                                             <Package className="h-6 w-6 text-gray-500" />
                                         )}
@@ -234,7 +284,7 @@ const OrderTracking = () => {
                                             {item.name}
                                         </h3>
                                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                            {item.description}
+                                            {item.description || 'Product description not available'}
                                         </p>
                                     </div>
                                 </div>
@@ -253,7 +303,7 @@ const OrderTracking = () => {
                                         </p>
 
                                         <p className="text-xl font-bold leading-tight text-gray-900 dark:text-white">
-                                            ₦{(item.price * item.quantity).toLocaleString()}
+                                            ₦{((item.price || 0) * item.quantity).toLocaleString()}
                                         </p>
                                     </div>
                                 </div>
@@ -267,7 +317,7 @@ const OrderTracking = () => {
                                         Subtotal
                                     </dt>
                                     <dd className="font-medium text-gray-900 dark:text-white">
-                                        ₦{order.subtotal.toLocaleString()}
+                                        ₦{(order.subtotal || 0).toLocaleString()}
                                     </dd>
                                 </dl>
 
@@ -276,7 +326,7 @@ const OrderTracking = () => {
                                         VAT (7.5%)
                                     </dt>
                                     <dd className="font-medium text-gray-900 dark:text-white">
-                                        ₦{order.tax.toLocaleString()}
+                                        ₦{(order.tax || 0).toLocaleString()}
                                     </dd>
                                 </dl>
 
@@ -285,7 +335,7 @@ const OrderTracking = () => {
                                         Delivery Fee
                                     </dt>
                                     <dd className="font-medium text-gray-900 dark:text-white">
-                                        ₦{order.deliveryFee.toLocaleString()}
+                                        ₦{(order.deliveryFee || 0).toLocaleString()}
                                     </dd>
                                 </dl>
                             </div>
@@ -295,7 +345,7 @@ const OrderTracking = () => {
                                     Total
                                 </dt>
                                 <dd className="text-lg font-bold text-gray-900 dark:text-white">
-                                    ₦{order.total.toLocaleString()}
+                                    ₦{(order.total || 0).toLocaleString()}
                                 </dd>
                             </dl>
                         </div>
@@ -308,7 +358,7 @@ const OrderTracking = () => {
                             </h3>
 
                             <ol className="relative ms-3 border-s border-gray-200 dark:border-gray-700">
-                                {order.history && order.history.map((event, index) => (
+                                {(order.history || []).map((event, index) => (
                                     <li key={index} className={`mb-10 ms-6 ${event.active ? "text-primary-700 dark:text-primary-500" : ""}`}>
                                         <span
                                             className={`absolute -start-3 flex h-6 w-6 items-center justify-center rounded-full ring-8 ring-white dark:ring-gray-800 ${event.active
@@ -378,9 +428,9 @@ const OrderTracking = () => {
                                     <button
                                         type="button"
                                         onClick={handleCancelOrder}
-                                        className="w-full rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700"
+                                        className="w-full rounded-lg border border-red-700 px-3 py-2.5 text-sm font-medium text-red-700 hover:bg-red-700 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-300 dark:border-red-500 dark:text-red-500 dark:hover:bg-red-600 dark:hover:text-white dark:focus:ring-red-900"
                                     >
-                                        Cancel the order
+                                        Cancel Order
                                     </button>
                                 )}
 

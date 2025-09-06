@@ -9,28 +9,45 @@ const OrderList = () => {
     const [durationFilter, setDurationFilter] = useState('this week');
     const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
     const ordersPerPage = 5;
 
-    // Load orders from localStorage
+    // Fetch orders from API
     useEffect(() => {
-        const loadOrders = () => {
+        const fetchOrders = async () => {
             try {
-                const savedOrders = localStorage.getItem('userOrders');
-                if (savedOrders) {
-                    const parsedOrders = JSON.parse(savedOrders);
-                    setOrders(parsedOrders);
-                    setFilteredOrders(parsedOrders);
+                setLoading(true);
+                setError(null);
+
+                // Get authentication token if needed
+                const token = localStorage.getItem('authToken');
+
+                const response = await fetch('http://localhost:3001/api/user/auth/orders', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token && { 'Authorization': `Bearer ${token}` })
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch orders: ${response.status}`);
                 }
-                setLoading(false);
+
+                const data = await response.json();
+                setOrders(data);
+                setFilteredOrders(data);
             } catch (error) {
-                console.error('Error loading orders:', error);
+                console.error('Error fetching orders:', error);
+                setError(error.message);
+            } finally {
                 setLoading(false);
             }
         };
 
-        loadOrders();
+        fetchOrders();
     }, []);
 
     // Apply filters when they change
@@ -42,7 +59,7 @@ const OrderList = () => {
             result = result.filter(order => order.status === orderTypeFilter);
         }
 
-        // Apply duration filter (simplified for demo)
+        // Apply duration filter
         const now = new Date();
         result = result.filter(order => {
             const orderDate = new Date(order.date);
@@ -84,32 +101,50 @@ const OrderList = () => {
         navigate('/');
     };
 
-    const handleCancelOrder = (orderId) => {
-        const updatedOrders = orders.map(order => {
-            if (order.id === orderId) {
-                return {
-                    ...order,
-                    status: 'cancelled',
-                    history: [
-                        ...order.history,
-                        {
-                            status: "Order Cancelled",
-                            description: "You've cancelled this order",
-                            date: new Date().toLocaleString(),
-                            icon: "cancel",
-                            active: true
-                        }
-                    ]
-                };
+    const handleCancelOrder = async (orderId) => {
+        try {
+            // Get authentication token if needed
+            const token = localStorage.getItem('authToken');
+
+            const response = await fetch(`/api/orders/${orderId}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { 'Authorization': `Bearer ${token}` })
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to cancel order: ${response.status}`);
             }
-            return order;
-        });
 
-        // Update localStorage
-        localStorage.setItem('userOrders', JSON.stringify(updatedOrders));
-        setOrders(updatedOrders);
+            // Update the local state with the cancelled order
+            const updatedOrders = orders.map(order => {
+                if (order.id === orderId) {
+                    return {
+                        ...order,
+                        status: 'cancelled',
+                        history: [
+                            ...order.history,
+                            {
+                                status: "Order Cancelled",
+                                description: "You've cancelled this order",
+                                date: new Date().toLocaleString(),
+                                icon: "cancel",
+                                active: true
+                            }
+                        ]
+                    };
+                }
+                return order;
+            });
 
-        alert('Order has been cancelled successfully.');
+            setOrders(updatedOrders);
+            alert('Order has been cancelled successfully.');
+        } catch (error) {
+            console.error('Error cancelling order:', error);
+            alert('Failed to cancel order. Please try again.');
+        }
     };
 
     const handleOrderAgain = (order) => {
@@ -183,6 +218,32 @@ const OrderList = () => {
                 <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
                     <div className="flex justify-center items-center h-64">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                    </div>
+                </div>
+            </section>
+        );
+    }
+
+    if (error) {
+        return (
+            <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16">
+                <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
+                    <div className="mx-auto max-w-5xl">
+                        <div className="text-center py-16">
+                            <div className="text-red-500 dark:text-red-400 mb-4">
+                                <svg className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Error Loading Orders</h3>
+                            <p className="mt-1 text-gray-500 dark:text-gray-400">{error}</p>
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="mt-4 inline-flex items-center rounded-lg bg-primary-700 px-4 py-2 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                            >
+                                Try Again
+                            </button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -280,7 +341,7 @@ const OrderList = () => {
                                             <div key={order.id} className="flex flex-wrap items-center gap-y-4 py-6">
                                                 <dl className="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
                                                     <dt className="text-base font-medium text-gray-500 dark:text-gray-400">Order ID:</dt>
-                                                    <dd className="mt-1.5 text-base font-semibold text-gray-900 dark:text-white">
+                                                    <dd className="mt-1.5 text-base font-semibold text-gray-909 dark:text-white">
                                                         <Link to={`/order-tracking/${order.id}`} className="hover:underline">
                                                             {order.id}
                                                         </Link>
@@ -303,7 +364,7 @@ const OrderList = () => {
 
                                                 <dl className="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
                                                     <dt className="text-base font-medium text-gray-500 dark:text-gray-400">Status:</dt>
-                                                    <dd className="me-2 mt-1.5 inline-flex items-center rounded px-2.5 py-0.5 text-xs font-medium ${statusBadge.class}">
+                                                    <dd className={`me-2 mt-1.5 inline-flex items-center rounded px-2.5 py-0.5 text-xs font-medium ${statusBadge.class}`}>
                                                         {statusBadge.icon}
                                                         {statusBadge.text}
                                                     </dd>

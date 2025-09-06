@@ -4,13 +4,18 @@ import ProductCard, { ProductCardSkeleton } from "./ProductCard";
 
 // Category-specific hero banners
 const heroBanners = {
-    "agro-allied": "/banners/agro.jpg",
-    "cosmetics": "/banners/cosmetics.jpg",
-    "fabrication": "/banners/fabrication.jpg",
-    "autospare-parts": "/banners/autospare.jpg",
-    "technology-gadgets": "/banners/tech.jpg",
-    "leather-works": "/banners/leather.jpg",
-    "food-processing": "/banners/food.jpg",
+    "food-processing": "/banners/agro.jpg",
+    "medicals": "/banners/cosmetics.jpg",
+    "engineering-fabrication": "/banners/fabrication.jpg",
+    "automobile": "/banners/autospare.jpg",
+    "controls-and-computers": "/banners/tech.jpg",
+    "leather-and-crafts": "/banners/leather.jpg",
+    "essential-oils": "/banners/food.jpg",
+    "metallurgy": "/banners/food.jpg",
+    "building-materials": "/banners/food.jpg",
+    "waste-recycling": "/banners/food.jpg",
+    "energy": "/banners/food.jpg",
+    "chemical-processes": "/banners/food.jpg",
 };
 
 const CategoryPage = () => {
