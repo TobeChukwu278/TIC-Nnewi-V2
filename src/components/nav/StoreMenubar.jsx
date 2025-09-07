@@ -13,8 +13,12 @@ export default function StoreMenubar() {
             <MenubarMenu>
                 <MenubarTrigger>About Us</MenubarTrigger>
                 <MenubarContent>
-                    <MenubarItem>Our Story</MenubarItem>
-                    <MenubarItem>Contact</MenubarItem>
+                    <MenubarItem>
+                        <Link to='/about'>Our Story</Link>
+                    </MenubarItem>
+                    <MenubarItem>
+                        <Link to='/about#contact'>Contact</Link>
+                    </MenubarItem>
                 </MenubarContent>
             </MenubarMenu>
 
