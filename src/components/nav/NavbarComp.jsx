@@ -405,8 +405,11 @@ export default function NavbarComp() {
             <div className="max-w-screen-xl px-4 mx-auto py-4 flex items-center justify-between">
                 {/* Left: Logo + Navigation Menu */}
                 <div className="flex items-center space-x-8">
-                    <Link to="/" className="shrink-0 text-2xl font-bold text-primary-700 dark:text-white">
+                    {/* <Link to="/" className="shrink-0 text-2xl font-bold text-primary-700 dark:text-white">
                         TIC
+                    </Link> */}
+                    <Link to="/" className="shrink-0 text-2xl font-bold text-primary-700 dark:text-white">
+                        <img src='/image.png' alt='TIC' className="w-9 h-9" />
                     </Link>
 
                     {/* Desktop Navigation Menu */}
