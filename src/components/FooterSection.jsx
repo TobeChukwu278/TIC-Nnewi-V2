@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
     FaXTwitter,
     FaLinkedin,
@@ -34,7 +35,7 @@ const links = [
     {
         group: "Company",
         items: [
-            { title: "About", href: "#" },
+            { title: "About", href: "/about" },
             { title: "Careers", href: "#" },
             { title: "Blog", href: "#" },
             { title: "Press", href: "#" },
@@ -74,13 +75,13 @@ export default function FooterSection() {
                             <div key={index} className="space-y-4 text-sm">
                                 <span className="block font-medium">{link.group}</span>
                                 {link.items.map((item, idx) => (
-                                    <a
+                                    <Link
                                         key={idx}
-                                        href={item.href}
+                                        to={item.href}
                                         className="text-muted-foreground hover:text-primary block duration-150"
                                     >
                                         {item.title}
-                                    </a>
+                                    </Link>
                                 ))}
                             </div>
                         ))}
