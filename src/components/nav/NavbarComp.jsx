@@ -1,6 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, User, Menu, X, ChevronDown, Home, Grid3X3, Trophy, Gift, Zap, Store, Sprout, HeartPulse, Wrench, Cpu, BookOpen, ChefHat, Heart } from "lucide-react";
+import {
+    ShoppingCart, User, Menu, X, ChevronDown, Home, Grid3X3,
+    Trophy, Gift, Zap, Store, Sprout, HeartPulse, Wrench,
+    Cpu, BookOpen, ChefHat, Heart, Car, CpuIcon, Leaf,
+    HardHat, Recycle, Battery, FlaskConical, Hammer,
+    Scissors, Construction
+} from "lucide-react";
 import { useUser } from '../../UserContext';
 
 // Categories data
@@ -9,76 +15,75 @@ const categories = [
         title: 'Food Processing',
         href: '/category/food-processing',
         icon: ChefHat,
-        description: 'Agricultural products and farming equipment',
+        description: 'Food processing equipment and machinery for industrial food production',
     },
     {
         title: 'Medicals',
         href: '/category/medicals',
         icon: HeartPulse,
-        description: 'Beauty products and personal care',
+        description: 'Medical equipment, devices, and healthcare supplies',
     },
     {
         title: 'Engineering Fabrication',
         href: '/category/engineering-fabrication',
-        icon: Wrench,
-        description: 'Metal works and construction materials',
+        icon: Construction,
+        description: 'Custom metal fabrication and engineering solutions',
     },
     {
         title: 'Automobile',
         href: '/category/automobile',
-        icon: Cpu,
-        description: 'Automotive parts and accessories',
+        icon: Car,
+        description: 'Automotive parts, accessories, and vehicle systems',
     },
     {
         title: 'Controls and Computers',
         href: '/category/controls-and-computers',
-        icon: BookOpen,
-        description: 'Electronics and tech accessories',
+        icon: Cpu,
+        description: 'Industrial control systems and computing equipment',
     },
     {
         title: 'Leather and Craft',
         href: '/category/leather-and-crafts',
-        icon: BookOpen,
-        description: 'Leather goods and accessories',
+        icon: Scissors,
+        description: 'Leather goods, crafts, and artisanal products',
     },
     {
         title: 'Essential Oils',
         href: '/category/essential-oils',
-        icon: Sprout,
-        description: 'Food items and kitchen supplies',
+        icon: Leaf,
+        description: 'Pure essential oils and aromatherapy products',
     },
     {
         title: 'Metallurgy',
         href: '/category/metallurgy',
-        icon: Sprout,
-        description: 'Food items and kitchen supplies',
+        icon: Hammer,
+        description: 'Metallurgical equipment and metal processing technology',
     },
     {
         title: 'Solid Mineral/Building Materials',
         href: '/category/solid-mineral/building-materials',
-        icon: Sprout,
-        description: 'Food items and kitchen supplies',
+        icon: HardHat,
+        description: 'Building materials, minerals, and construction supplies',
     },
     {
         title: 'Waste Recycling',
         href: '/category/waste-recycling',
-        icon: Sprout,
-        description: 'Food items and kitchen supplies',
+        icon: Recycle,
+        description: 'Waste management and recycling equipment solutions',
     },
     {
         title: 'Energy',
         href: '/category/energy',
-        icon: Sprout,
-        description: 'Food items and kitchen supplies',
+        icon: Battery,
+        description: 'Energy systems, power solutions, and renewable energy',
     },
     {
         title: 'Chemical Processes',
         href: '/category/chemical-processes',
-        icon: Sprout,
-        description: 'Food items and kitchen supplies',
+        icon: FlaskConical,
+        description: 'Chemical processing equipment and industrial chemistry',
     },
 ];
-
 // Best sellers data
 const bestSellers = [
     {
