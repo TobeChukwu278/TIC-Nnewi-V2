@@ -16,16 +16,22 @@ import OrderConfirmation from './components/OrderConfirmation';
 import OrderTracking from './components/OrderTracking';
 import OrderList from './components/OrderList';
 import AccountOverview from './components/AccountOverview'
+import Land from './Land/Land';
 
 const Layout = () => {
   const location = useLocation();
+  const isHomePage = location.pathname === "/";
+  const isAboutPage = location.pathname === "/about";
 
   return (
     <UserProvider>
       <>
-        <Nav />
+        {/* Hide Nav on About page */}
+        {!isAboutPage && <Nav />}
+
         {/* Only show HeroSlider on homepage */}
-        {location.pathname === "/" && <HeroSlider />}
+        {isHomePage && <HeroSlider />}
+
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/category/:category" element={<CategoryPage />} />
@@ -39,8 +45,11 @@ const Layout = () => {
           <Route path="/order-tracking" element={<OrderTracking />} />
           <Route path="/my-orders" element={<OrderList />} />
           <Route path="/my-account" element={<AccountOverview />} />
+          <Route path="/about" element={<Land />} />
         </Routes>
-        <FooterSection />
+
+        {/* Hide Footer on About page */}
+        {!isAboutPage && <FooterSection />}
       </>
     </UserProvider>
   );
