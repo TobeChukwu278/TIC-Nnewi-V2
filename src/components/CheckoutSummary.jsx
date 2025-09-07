@@ -174,7 +174,7 @@ const CheckoutSummary = () => {
             const token = localStorage.getItem('authToken'); // Adjust based on your auth setup
 
             // Send order to backend API
-            const response = await fetch(`http://localhost:3001/api/user/auth/orders`, {
+            const response = await fetch(`https://backend-production-7f80.up.railway.app/api/user/auth/orders`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

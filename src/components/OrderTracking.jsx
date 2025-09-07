@@ -18,7 +18,7 @@ const OrderTracking = () => {
             try {
                 // Try to get order from API first if we have a token
                 if (orderId && token) {
-                    fetch(`http://localhost:3001/api/user/auth/orders/${orderId}`, {
+                    fetch(`https://backend-production-7f80.up.railway.app/api/user/auth/orders/${orderId}`, {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
@@ -86,7 +86,7 @@ const OrderTracking = () => {
         try {
             // Try to cancel order via API if we have a token
             if (token) {
-                const response = await fetch(`http://localhost:3001/api/user/auth/orders/${order.id}/status`, {
+                const response = await fetch(`https://backend-production-7f80.up.railway.app/api/user/auth/orders/${order.id}/status`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',

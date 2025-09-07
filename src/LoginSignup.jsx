@@ -25,7 +25,7 @@ const LoginView = ({ setView }) => {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:3001/api/user/auth/login', {
+            const response = await fetch('https://backend-production-7f80.up.railway.app/api/user/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -163,7 +163,7 @@ const RegisterView = ({ setView }) => {
 
         try {
             const body = { email, password, role: 'customer' };
-            const response = await fetch('http://localhost:3001/api/user/auth/register', {
+            const response = await fetch('https://backend-production-7f80.up.railway.app/api/user/auth/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

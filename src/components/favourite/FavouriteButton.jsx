@@ -35,7 +35,7 @@ const FavouriteButton = ({ productId, size = 'medium' }) => {
 
         try {
             console.log('Checking favourite status for:', { productId, userEmail });
-            const response = await fetch(`http://localhost:3001/api/user/auth/favorites/check/${productId}`, {
+            const response = await fetch(`https://backend-production-7f80.up.railway.app/api/user/auth/favorites/check/${productId}`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                 }
@@ -67,7 +67,7 @@ const FavouriteButton = ({ productId, size = 'medium' }) => {
         try {
             if (isFavourited) {
                 console.log('Sending POST/DELETE request for favourite:', { productId, userEmail });
-                await fetch(`http://localhost:3001/api/user/auth/favorites/${productId}`, {
+                await fetch(`https://backend-production-7f80.up.railway.app/api/user/auth/favorites/${productId}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -75,7 +75,7 @@ const FavouriteButton = ({ productId, size = 'medium' }) => {
                 });
                 setIsFavourited(false);
             } else {
-                await fetch(`http://localhost:3001/api/user/auth/favorites/${productId}`, {
+                await fetch(`https://backend-production-7f80.up.railway.app/api/user/auth/favorites/${productId}`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`

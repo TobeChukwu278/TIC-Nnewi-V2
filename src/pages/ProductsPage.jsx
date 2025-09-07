@@ -55,7 +55,7 @@ const ProductsPage = () => {
             setLoading(true);
             setError(null);
             try {
-                const response = await fetch('http://localhost:3001/api/store/updates/products');
+                const response = await fetch('https://backend-production-7f80.up.railway.app/api/store/updates/products');
                 if (!response.ok) {
                     throw new Error('Failed to fetch products');
                 }

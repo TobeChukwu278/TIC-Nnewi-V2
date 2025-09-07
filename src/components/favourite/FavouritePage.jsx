@@ -24,7 +24,7 @@ const FavoritesPage = () => {
         console.log('Token:', token ? 'exists' : 'missing');
         console.log('trying to fetch favorites....');
         try {
-            const response = await fetch('http://localhost:3001/api/user/auth/favorites', {
+            const response = await fetch('https://backend-production-7f80.up.railway.app/api/user/auth/favorites', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -54,7 +54,7 @@ const FavoritesPage = () => {
 
     const removeFavorite = async (productId) => {
         try {
-            const response = await fetch(`http://localhost:3001/api/user/auth/favorites/${productId}`, {
+            const response = await fetch(`https://backend-production-7f80.up.railway.app/api/user/auth/favorites/${productId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
