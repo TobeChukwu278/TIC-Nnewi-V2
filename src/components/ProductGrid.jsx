@@ -145,7 +145,7 @@ export default function ProductsGrid() {
                 {/* New Arrivals */}
                 <div>
                     <SectionHeader
-                        title="New Arrivals"
+                        title="Latest Additions"
                         icon={Clock}
                         viewAllLink="/new-arrivals"
                         description="Discover our latest additions"
@@ -175,7 +175,7 @@ export default function ProductsGrid() {
                 {/* Trending Now */}
                 <div>
                     <SectionHeader
-                        title="Trending Now"
+                        title="Best Selling"
                         icon={Zap}
                         viewAllLink="/trending"
                         description="What everyone is buying right now"
