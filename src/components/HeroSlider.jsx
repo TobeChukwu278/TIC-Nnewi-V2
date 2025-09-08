@@ -7,7 +7,7 @@ import { cn } from "../lib/utils"; // remove if not needed
 const heroSlides = [
     {
         id: 1,
-        title: "Quality Producs, Entrepreneur Prics",
+        title: "Quality Products, Entrepreneur Prices",
         subtitle: "Up to 50% OFF Electronics",
         buttonText: "Shop Now",
         image:
@@ -16,14 +16,14 @@ const heroSlides = [
     {
         id: 2,
         title: "Expert Product Recommendations",
-        subtitle: "Check out the latest trends",
+        subtitle: "Check out the best selling products",
         buttonText: "Explore Collection",
         image:
             "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?q=80&w=1920&auto=format&fit=crop",
     },
     {
         id: 3,
-        title: "No more Hunting fir Quality Business Supplies",
+        title: "No more Hunting for Quality Business Supplies",
         subtitle: "Save big on market products & accessories",
         buttonText: "Start Shopping",
         image:
