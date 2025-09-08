@@ -7,7 +7,7 @@ import { cn } from "../lib/utils"; // remove if not needed
 const heroSlides = [
     {
         id: 1,
-        title: "Mega Summer Sale",
+        title: "Quality Producs, Entrepreneur Prics",
         subtitle: "Up to 50% OFF Electronics",
         buttonText: "Shop Now",
         image:
@@ -15,7 +15,7 @@ const heroSlides = [
     },
     {
         id: 2,
-        title: "New Arrivals",
+        title: "Expert Product Recommendations",
         subtitle: "Check out the latest trends",
         buttonText: "Explore Collection",
         image:
@@ -23,8 +23,8 @@ const heroSlides = [
     },
     {
         id: 3,
-        title: "Back to School Deals",
-        subtitle: "Save big on laptops & accessories",
+        title: "No more Hunting fir Quality Business Supplies",
+        subtitle: "Save big on market products & accessories",
         buttonText: "Start Shopping",
         image:
             "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1920&auto=format&fit=crop",
