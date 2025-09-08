@@ -8,7 +8,7 @@ const heroSlides = [
     {
         id: 1,
         title: "Quality Products, Entrepreneur Prices",
-        subtitle: "Up to 50% OFF Electronics",
+        subtitle: "Up to 50% OFF Industrial equipments",
         buttonText: "Shop Now",
         image:
             "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=1920&auto=format&fit=crop",
