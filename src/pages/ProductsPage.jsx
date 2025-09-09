@@ -16,6 +16,7 @@ const ProductsPage = () => {
     const [loading, setLoading] = useState(true);
     const [products, setProducts] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
+    const [displayedProducts, setDisplayedProducts] = useState([]);
     const [error, setError] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [sortBy, setSortBy] = useState("featured");
@@ -24,6 +25,8 @@ const ProductsPage = () => {
     const [showFilters, setShowFilters] = useState(false);
     const [priceRange, setPriceRange] = useState([0, 100000]);
     const [ratingFilter, setRatingFilter] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [productsPerPage] = useState(20); // Number of products to show per page
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -35,10 +38,10 @@ const ProductsPage = () => {
         return category
             .toLowerCase()
             .trim()
-            .replace(/\s+/g, '-')  // Replace spaces with hyphens
-            .replace(/-+/g, '-')   // Replace multiple hyphens with single hyphen
-            .replace(/[^a-z0-9-]/g, '') // Remove special characters
-            .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/[^a-z0-9-]/g, '')
+            .replace(/^-+|-+$/g, '');
     };
 
     // Extract category from URL params
@@ -80,35 +83,92 @@ const ProductsPage = () => {
         fetchProducts();
     }, []);
 
+    useEffect(() => {
+        if (products.length > 0) {
+            console.log('=== ALL UNIQUE CATEGORIES IN PRODUCTS ===');
+            const categoryMap = new Map();
+
+            products.forEach(product => {
+                if (product.category) {
+                    const normalized = normalizeCategory(product.category);
+                    if (!categoryMap.has(normalized)) {
+                        categoryMap.set(normalized, {
+                            original: product.category,
+                            count: 0,
+                            products: []
+                        });
+                    }
+                    const categoryData = categoryMap.get(normalized);
+                    categoryData.count++;
+                    categoryData.products.push(product.name);
+                }
+            });
+
+            // Log all categories with counts
+            categoryMap.forEach((data, normalized) => {
+                console.log(`Category: "${data.original}" → Normalized: "${normalized}" → Count: ${data.count}`);
+                if (data.count <= 3) { // Show product names for small categories
+                    console.log(`  Products: ${data.products.join(', ')}`);
+                }
+            });
+            console.log('=== END CATEGORIES DEBUG ===');
+        }
+    }, [products]);
+
     // Get unique normalized categories with display names
     const categories = React.useMemo(() => {
-        const uniqueCategories = new Set();
-        const categoryMap = new Map();
+        const categoryCounts = new Map();
+        const categoryDisplayNames = new Map();
 
-        // Add normalized categories and map to display names
+        // Count products per category and store display names
         products.forEach(product => {
             if (product.category) {
-                const normalized = normalizeCategory(product.category);
-                const displayName = product.category; // Original display name
+                // USE THE PRE-NORMALIZED CATEGORY, NOT RE-NORMALIZING
+                const normalized = product.normalizedCategory; // This is the key fix!
+                const displayName = product.category;
 
-                // Store the original display name for the normalized category
-                if (!categoryMap.has(normalized)) {
-                    categoryMap.set(normalized, displayName);
+                // Store the most common display name for this normalized category
+                if (!categoryDisplayNames.has(normalized)) {
+                    categoryDisplayNames.set(normalized, displayName);
                 }
 
-                uniqueCategories.add(normalized);
+                // Count products in this category
+                categoryCounts.set(normalized, (categoryCounts.get(normalized) || 0) + 1);
             }
         });
 
-        // Convert to array with both normalized and display names
+        // Convert to array with counts
         return [
-            { normalized: "all", display: "All Categories" },
-            ...Array.from(uniqueCategories).map(normalized => ({
+            {
+                normalized: "all",
+                display: "All Categories",
+                count: products.length
+            },
+            ...Array.from(categoryCounts.entries()).map(([normalized, count]) => ({
                 normalized,
-                display: categoryMap.get(normalized) || normalized
+                display: categoryDisplayNames.get(normalized) || normalized,
+                count
             }))
         ];
     }, [products]);
+
+    // Add this debug useEffect to see what's happening with the metallurgy category
+    useEffect(() => {
+        if (selectedCategory === "metallurgy") {
+            console.log('=== METALLURGY CATEGORY DEBUG ===');
+
+            // Find all products that should be in metallurgy
+            const metallurgyProducts = products.filter(product => {
+                const productNormalized = product.normalizedCategory || normalizeCategory(product.category);
+                return productNormalized === "metallurgy";
+            });
+
+            console.log('Products that should be in metallurgy:', metallurgyProducts);
+            console.log('Filtered products:', filteredProducts);
+            console.log('Displayed products:', displayedProducts);
+            console.log('=== END METALLURGY DEBUG ===');
+        }
+    }, [selectedCategory, products, filteredProducts, displayedProducts]);
 
     // Filter products based on selected criteria
     useEffect(() => {
@@ -117,12 +177,17 @@ const ProductsPage = () => {
         // Filter by category using normalized comparison
         if (selectedCategory !== "all") {
             const normalizedSelected = normalizeCategory(selectedCategory);
-            filtered = filtered.filter(product =>
-                product.normalizedCategory === normalizedSelected
-            );
+
+            filtered = filtered.filter(product => {
+                // USE THE PRE-NORMALIZED CATEGORY
+                const productNormalized = product.normalizedCategory;
+                return productNormalized === normalizedSelected;
+            });
         }
 
-        // Filter by search query (also searches normalized categories)
+
+
+        // Filter by search query
         if (searchQuery) {
             const normalizedQuery = searchQuery.toLowerCase();
             filtered = filtered.filter(product =>
@@ -163,17 +228,25 @@ const ProductsPage = () => {
                 filtered.sort((a, b) => a.name.localeCompare(b.name));
                 break;
             default:
-                // featured - default sorting
                 filtered.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
                 break;
         }
 
         setFilteredProducts(filtered);
+        setCurrentPage(1); // Reset to first page when filters change
     }, [products, selectedCategory, sortBy, searchQuery, priceRange, ratingFilter]);
+
+
+
+    // Update displayed products based on current page
+    useEffect(() => {
+        const startIndex = (currentPage - 1) * productsPerPage;
+        const endIndex = startIndex + productsPerPage;
+        setDisplayedProducts(filteredProducts.slice(0, endIndex));
+    }, [filteredProducts, currentPage, productsPerPage]);
 
     const handleCategoryChange = (category) => {
         setSelectedCategory(category);
-        // Update URL with category parameter
         const params = new URLSearchParams();
         if (category !== "all") {
             params.set('category', category);
@@ -189,9 +262,13 @@ const ProductsPage = () => {
         navigate({ search: '' });
     };
 
+    const loadMoreProducts = () => {
+        setCurrentPage(prevPage => prevPage + 1);
+    };
+
     const ProductGridView = () => (
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
-            {filteredProducts.map((product) => (
+            {displayedProducts.map((product) => (
                 <div key={product.id} className="min-w-0">
                     <Link
                         to={`/products/${product.id}`}
@@ -206,7 +283,7 @@ const ProductsPage = () => {
 
     const ProductListView = () => (
         <div className="space-y-4">
-            {filteredProducts.map((product) => (
+            {displayedProducts.map((product) => (
                 <div key={product.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow">
                     <Link to={`/products/${product.id}`} className="flex flex-col sm:flex-row gap-4">
                         <div className="flex-shrink-0">
@@ -289,6 +366,8 @@ const ProductsPage = () => {
         );
     }
 
+    const hasMoreProducts = displayedProducts.length < filteredProducts.length;
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-6 md:py-8">
@@ -302,7 +381,7 @@ const ProductsPage = () => {
                             }
                         </h1>
                         <p className="text-gray-600 dark:text-gray-400 mt-1">
-                            {filteredProducts.length} products found
+                            Showing {displayedProducts.length} of {filteredProducts.length} products
                         </p>
                     </div>
 
@@ -400,8 +479,11 @@ const ProductsPage = () => {
                                             <span className="text-sm text-gray-700 dark:text-gray-300 capitalize">
                                                 {category.display}
                                             </span>
-                                            <span className="text-xs text-gray-400">
+                                            {/* <span className="text-xs text-gray-400">
                                                 ({products.filter(p => p.normalizedCategory === category.normalized).length})
+                                            </span> */}
+                                            <span className="text-xs text-gray-400">
+                                                ({categories.find(cat => cat.normalized === category.normalized)?.count || 0})
                                             </span>
                                         </label>
                                     ))}
@@ -454,7 +536,7 @@ const ProductsPage = () => {
 
                     {/* Main Content */}
                     <div className="lg:col-span-3">
-                        {filteredProducts.length === 0 ? (
+                        {displayedProducts.length === 0 ? (
                             <div className="text-center py-12 md:py-16">
                                 <div className="text-gray-400 dark:text-gray-600 text-6xl mb-4">😢</div>
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -476,11 +558,14 @@ const ProductsPage = () => {
                             <ProductListView />
                         )}
 
-                        {/* Load More Button (for pagination) */}
-                        {filteredProducts.length > 0 && filteredProducts.length < products.length && (
+                        {/* Load More Button */}
+                        {hasMoreProducts && (
                             <div className="text-center mt-6 md:mt-8">
-                                <button className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 md:px-6 py-2 md:py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm md:text-base">
-                                    Load More Products
+                                <button
+                                    onClick={loadMoreProducts}
+                                    className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 md:px-6 py-2 md:py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm md:text-base transition-colors"
+                                >
+                                    Load More Products ({filteredProducts.length - displayedProducts.length} remaining)
                                 </button>
                             </div>
                         )}
