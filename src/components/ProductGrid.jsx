@@ -76,7 +76,7 @@ export default function ProductsGrid() {
     );
 
     const ProductGrid = ({ products, loading, skeletonCount = 4 }) => (
-        <div className=" flex flex-col sm:grid sm:grid-cols-2 md:grid  md:grid-cols-3 lg:grid lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid  md:grid-cols-3 lg:grid lg:grid-cols-4 gap-4 sm:gap-6">
             {loading
                 ? Array.from({ length: skeletonCount }).map((_, i) => (
                     <ProductCardSkeleton key={i} />
