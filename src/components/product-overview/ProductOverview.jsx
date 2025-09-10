@@ -14,6 +14,9 @@ const ProductOverview = () => {
     const [suggestedProducts, setSuggestedProducts] = useState([]);
     const [error, setError] = useState(null);
     const [isAdding, setIsAdding] = useState(false);
+    const inStock = product.stock > 0;
+    const lowStock = product.stock > 0 && product.stock <= 10;
+
 
     // Handle back navigation
     const handleGoBack = () => {
@@ -151,9 +154,7 @@ const ProductOverview = () => {
                                     className="absolute top-0 left-0 w-full h-full object-contain rounded-lg shadow-md"
                                     src={product.main_image_url || 'https://via.placeholder.com/500x500?text=No+Image'}
                                     alt={product.name}
-                                // onError={(e) => {
-                                //     e.target.src = 'https://via.placeholder.com/500x500?text=No+Image';
-                                // }}
+
                                 />
                             </div>
                         </div>
@@ -168,6 +169,12 @@ const ProductOverview = () => {
                             <p className="text-sm text-gray-500 dark:text-gray-400 capitalize mt-1">
                                 {product.category || 'Uncategorized'}
                             </p>
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className={`w-2 h-2 rounded-full ${inStock ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                                <span className={`text-sm ${inStock ? 'text-green-600' : 'text-red-600'}`}>
+                                    {inStock ? (lowStock ? `Low stock (${product.stock} left)` : 'In stock') : 'Out of stock'}
+                                </span>
+                            </div>
                         </div>
 
                         <p className="text-2xl font-extrabold sm:text-3xl lg:text-4xl dark:text-white">

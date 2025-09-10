@@ -152,23 +152,6 @@ const ProductsPage = () => {
         ];
     }, [products]);
 
-    // Add this debug useEffect to see what's happening with the metallurgy category
-    useEffect(() => {
-        if (selectedCategory === "metallurgy") {
-            console.log('=== METALLURGY CATEGORY DEBUG ===');
-
-            // Find all products that should be in metallurgy
-            const metallurgyProducts = products.filter(product => {
-                const productNormalized = product.normalizedCategory || normalizeCategory(product.category);
-                return productNormalized === "metallurgy";
-            });
-
-            console.log('Products that should be in metallurgy:', metallurgyProducts);
-            console.log('Filtered products:', filteredProducts);
-            console.log('Displayed products:', displayedProducts);
-            console.log('=== END METALLURGY DEBUG ===');
-        }
-    }, [selectedCategory, products, filteredProducts, displayedProducts]);
 
     // Filter products based on selected criteria
     useEffect(() => {
@@ -267,7 +250,7 @@ const ProductsPage = () => {
     };
 
     const ProductGridView = () => (
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
             {displayedProducts.map((product) => (
                 <div key={product.id} className="min-w-0">
                     <Link
@@ -354,7 +337,7 @@ const ProductsPage = () => {
 
                         {/* Main Content Skeleton */}
                         <div className="lg:col-span-3">
-                            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
+                            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
                                 {Array.from({ length: 8 }).map((_, i) => (
                                     <ProductCardSkeleton key={i} />
                                 ))}

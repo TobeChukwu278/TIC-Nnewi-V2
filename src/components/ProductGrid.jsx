@@ -35,7 +35,7 @@ export default function ProductsGrid() {
         .filter(product => product.featured)
         .slice(0, 8);
 
-    const newArrivals = products
+    const latestAdditions = products
         .sort((a, b) => new Date(b.created_at || b.date_added) - new Date(a.created_at || a.date_added))
         .slice(0, 8);
 
@@ -44,7 +44,7 @@ export default function ProductsGrid() {
         .sort((a, b) => b.rating - a.rating)
         .slice(0, 8);
 
-    const trendingProducts = products
+    const bestSelling = products
         .filter(product => product.popular || product.sales_count > 10)
         .slice(0, 8);
 
@@ -100,7 +100,7 @@ export default function ProductsGrid() {
                 <div className="max-w-7xl mx-auto">
                     <div className="animate-pulse">
                         <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded mb-8"></div>
-                        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-6">
                             {Array.from({ length: 8 }).map((_, i) => (
                                 <ProductCardSkeleton key={i} />
                             ))}
@@ -147,11 +147,11 @@ export default function ProductsGrid() {
                     <SectionHeader
                         title="Latest Additions"
                         icon={Clock}
-                        viewAllLink="/new-arrivals"
+                        viewAllLink="/latest-additions"
                         description="Discover our latest additions"
                     />
                     <ProductGrid
-                        products={newArrivals}
+                        products={latestAdditions}
                         loading={loading}
                         skeletonCount={4}
                     />
@@ -172,16 +172,16 @@ export default function ProductsGrid() {
                     />
                 </div>
 
-                {/* Trending Now */}
+                {/* Best Selling */}
                 <div>
                     <SectionHeader
                         title="Best Selling"
                         icon={Zap}
-                        viewAllLink="/trending"
+                        viewAllLink="/best-selling"
                         description="What everyone is buying right now"
                     />
                     <ProductGrid
-                        products={trendingProducts}
+                        products={bestSelling}
                         loading={loading}
                         skeletonCount={4}
                     />

@@ -207,9 +207,6 @@ const CartItem = ({ item, updateQuantity, removeFromCart }) => {
                 src={item.image || 'https://via.placeholder.com/50'}
                 alt={item.name}
                 className="w-12 h-12 rounded-md object-cover flex-shrink-0"
-            // onError={(e) => {
-            //     e.target.src = 'https://via.placeholder.com/50';
-            // }}
             />
             <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
@@ -416,7 +413,7 @@ export default function NavbarComp() {
                     <ul className="hidden lg:flex items-center gap-1">
                         <NavigationMenuItem title="Home" icon={Home}>
                             <div className="space-y-2">
-                                <ListItem href="/new-arrivals" title="New Arrivals" icon={Zap}>
+                                <ListItem href="/latest-additions" title="Latest Addition" icon={Zap}>
                                     Check out our latest products
                                 </ListItem>
                                 <ListItem href="/featured" title="Featured Products" icon={Trophy}>

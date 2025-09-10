@@ -99,7 +99,7 @@ const CategoryPage = () => {
                     <p className="text-gray-500 text-lg">No products found in this category.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
                     {loading
                         ? Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />)
                         : filteredProducts.map((product) => (

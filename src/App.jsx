@@ -17,6 +17,7 @@ import OrderTracking from './components/OrderTracking';
 import OrderList from './components/OrderList';
 import AccountOverview from './components/AccountOverview'
 import Land from './Land/Land';
+import SimpleProductsPage from './components/ProductsPage'
 
 const Layout = () => {
   const location = useLocation();
@@ -46,8 +47,13 @@ const Layout = () => {
           <Route path="/my-orders" element={<OrderList />} />
           <Route path="/my-account" element={<AccountOverview />} />
           <Route path="/about" element={<Land />} />
+          <Route path="/featured" element={<ProductsPage category="featured" title="Featured Products" />} />
+          <Route path="/latest-additions" element={<ProductsPage category="latest" title="Latest Additions" />} />
+          <Route path="/best-sellers" element={<ProductsPage category="bestsellers" title="Best Sellers" />} />
+          <Route path="/best-selling" element={<ProductsPage category="bestselling" title="Best Selling Products" />} />
+          <Route path="/products" element={<ProductsPage />} />
         </Routes>
-
+        {/* <SimpleProductsPage /> */}
         {/* Hide Footer on About page */}
         {!isAboutPage && <FooterSection />}
       </>
