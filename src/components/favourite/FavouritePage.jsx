@@ -10,12 +10,6 @@ const FavoritesPage = () => {
     const { isLoggedIn, userEmail } = useUser();
     const navigate = useNavigate();
 
-    function OptimizedImage({ src, width = 600, quality = 75, alt, className }) {
-        const optimizedSrc = `/_vercel/image ? url = ${encodeURIComponent(src)
-            }& w=${width}& q=${quality}`;
-        return <img src={optimizedSrc} alt={alt} className={className} loading="lazy" />;
-    }
-
     // Use the toast hook
     const { toast, showToast, hideToast } = useToast();
 
@@ -157,7 +151,7 @@ const FavoritesPage = () => {
                 {favorites.map((product) => (
                     <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                         <div className="relative">
-                            <OptimizedImage
+                            <img
                                 src={product.image_url || 'https://via.placeholder.com/300x200?text=No+Image'}
                                 alt={product.name}
                                 className="w-full h-48 object-cover"

@@ -5,11 +5,6 @@ import { FaBars, FaTimes } from 'react-icons/fa';
 const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    // function OptimizedImage({ src, width = 600, quality = 75, alt, className }) {
-    //     const optimizedSrc = `/_vercel/image ? url = ${encodeURIComponent(src)
-    //         }& w=${width}& q=${quality}`;
-    //     return <img src={optimizedSrc} alt={alt} className={className} loading="lazy" />;
-    // }
 
     return (
         <header className="bg-white text-gray-800 shadow-lg sticky top-0 z-50">

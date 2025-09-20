@@ -9,11 +9,6 @@ const OrderTracking = () => {
     const [userOrders, setUserOrders] = useState([]);
     const navigate = useNavigate();
 
-    function OptimizedImage({ src, width = 600, quality = 75, alt, className }) {
-        const optimizedSrc = `/_vercel/image ? url = ${encodeURIComponent(src)
-            }& w=${width}& q=${quality}`;
-        return <img src={optimizedSrc} alt={alt} className={className} loading="lazy" />;
-    }
 
     // Get token from localStorage or your auth context
     const token = localStorage.getItem('authToken'); // Adjust based on your auth setup
@@ -272,7 +267,7 @@ const OrderTracking = () => {
                                 <div className="flex items-center gap-6">
                                     <div className="h-14 w-14 shrink-0 bg-gray-200 rounded-lg flex items-center justify-center dark:bg-gray-700">
                                         {item.image ? (
-                                            <OptimizedImage
+                                            <img
                                                 className="h-full w-full object-cover rounded-lg"
                                                 src={item.image}
                                                 alt={item.name}

@@ -2,11 +2,6 @@ import React from 'react';
 
 const About = () => {
 
-    // function OptimizedImage({ src, width = 600, quality = 75, alt, className }) {
-    //     const optimizedSrc = `/_vercel/image ? url = ${encodeURIComponent(src)
-    //         }& w=${width}& q=${quality}`;
-    //     return <img src={optimizedSrc} alt={alt} className={className} loading="lazy" />;
-    // }
     return (
         <section id="about" className="py-16 bg-white">
             <div className="container mx-auto px-6">

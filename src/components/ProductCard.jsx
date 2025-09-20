@@ -27,11 +27,6 @@ const ProductCard = ({ product }) => {
     const isLowStock = stock > 0 && stock <= 10;
     const isOutOfStock = stock === 0;
 
-    function OptimizedImage({ src, width = 600, quality = 75, alt, className }) {
-        const optimizedSrc = `/_vercel/image ? url = ${encodeURIComponent(src)
-            }& w=${width}& q=${quality}`;
-        return <img src={optimizedSrc} alt={alt} className={className} loading="lazy" />;
-    }
 
     const addToCart = () => {
         // Check if product is out of stock
@@ -150,7 +145,7 @@ const ProductCard = ({ product }) => {
                 {/* Image Section */}
                 <Link to={`/products/${product.id}`} className="block h-48 w-full mb-3">
                     <div className={`relative h-full ${isOutOfStock ? 'opacity-60' : ''}`}>
-                        <OptimizedImage
+                        <img
                             className="mx-auto h-full w-full object-contain dark:hidden"
                             src={imageError
                                 ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSIjODg4ODg4Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='
@@ -159,7 +154,7 @@ const ProductCard = ({ product }) => {
                             alt={product.name || 'Product image'}
                             onError={handleImageError}
                         />
-                        <OptimizedImage
+                        <img
                             className="mx-auto hidden h-full w-full object-contain dark:block"
                             src={imageError
                                 ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSIjNzc3Nzc3Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='
@@ -272,7 +267,7 @@ const ProductCard = ({ product }) => {
                     <div className="relative">
                         <Link to={`/products/${product.id}`} className="flex-shrink-0 w-20 h-20 block">
                             <div className={`relative w-full h-full ${isOutOfStock ? 'opacity-60' : ''}`}>
-                                <OptimizedImage
+                                <img
                                     className="w-full h-full object-contain rounded-md"
                                     src={imageError
                                         ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSIjODg4ODg4Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='

@@ -31,11 +31,6 @@ const ProductsPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    function OptimizedImage({ src, width = 600, quality = 75, alt, className }) {
-        const optimizedSrc = `/_vercel/image ? url = ${encodeURIComponent(src)
-            }& w=${width}& q=${quality}`;
-        return <img src={optimizedSrc} alt={alt} className={className} loading="lazy" />;
-    }
 
     // Function to normalize category names
     const normalizeCategory = (category) => {
@@ -274,7 +269,7 @@ const ProductsPage = () => {
                 <div key={product.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow">
                     <Link to={`/products/${product.id}`} className="flex flex-col sm:flex-row gap-4">
                         <div className="flex-shrink-0">
-                            <OptimizedImage
+                            <img
                                 src={product.main_image_url || 'https://via.placeholder.com/120x120?text=No+Image'}
                                 alt={product.name}
                                 className="w-full sm:w-24 h-24 object-contain rounded-lg"
