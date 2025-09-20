@@ -34,13 +34,10 @@ const LoginView = ({ setView }) => {
             });
 
             const data = await response.json();
-            console.log('Login response:', data);
             if (response.ok) {
                 // Call the login function from the context
                 login(data.user.email, data.token);
                 localStorage.setItem("authToken", data.token);
-                console.log('Saving token:', data.token);
-                console.log('Saving email:', data.user.email);
                 navigate('/');
             } else {
                 setMessage(data.error || 'Login failed.');

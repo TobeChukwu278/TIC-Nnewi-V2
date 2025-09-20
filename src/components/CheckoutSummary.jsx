@@ -112,7 +112,6 @@ const CheckoutSummary = () => {
 
     // Handle Paystack success
     const onPaystackSuccess = async (reference) => {
-        console.log('Payment successful!', reference);
         setIsProcessing(true);
 
         try {
@@ -128,7 +127,6 @@ const CheckoutSummary = () => {
     // Verify payment with backend
     const verifyPayment = async (paymentRef) => {
         try {
-            console.log('Verifying payment with reference:', paymentRef);
             const token = localStorage.getItem('authToken');
 
             const response = await fetch(`http://st:3001/api/user/auth/verify-payment`, {
@@ -142,7 +140,6 @@ const CheckoutSummary = () => {
                 })
             });
 
-            console.log('Verification response status:', response.status);
 
             if (!response.ok) {
                 const errorData = await response.json();
@@ -151,7 +148,6 @@ const CheckoutSummary = () => {
             }
 
             const result = await response.json();
-            console.log('Payment verified successfully:', result);
 
             // Clear cart and navigate to confirmation
             localStorage.removeItem('cart');
@@ -174,7 +170,6 @@ const CheckoutSummary = () => {
 
     // Handle Paystack close
     const onPaystackClose = () => {
-        console.log('Payment closed');
         setIsProcessing(false);
     };
 
@@ -252,7 +247,6 @@ const CheckoutSummary = () => {
             ...prev,
             [name]: value
         }));
-        console.log('Form Data Updated:', { ...formData, [name]: value });
     };
 
     const handleVoucherApply = () => {

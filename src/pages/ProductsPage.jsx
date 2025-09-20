@@ -85,7 +85,6 @@ const ProductsPage = () => {
 
     useEffect(() => {
         if (products.length > 0) {
-            console.log('=== ALL UNIQUE CATEGORIES IN PRODUCTS ===');
             const categoryMap = new Map();
 
             products.forEach(product => {
@@ -111,7 +110,6 @@ const ProductsPage = () => {
                     console.log(`  Products: ${data.products.join(', ')}`);
                 }
             });
-            console.log('=== END CATEGORIES DEBUG ===');
         }
     }, [products]);
 

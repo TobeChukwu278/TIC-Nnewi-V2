@@ -61,8 +61,6 @@ const ProductOverview = () => {
             // Dispatch event to notify navbar (and other components) about the update
             window.dispatchEvent(new Event('cartUpdated'));
 
-            console.log('Product added to cart:', product.name);
-
         } catch (error) {
             console.error('Error adding to cart:', error);
             showToast('Failed to add product to cart', 'error');

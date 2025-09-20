@@ -34,7 +34,6 @@ const FavouriteButton = ({ productId, size = 'medium' }) => {
         if (!productId) return;
 
         try {
-            console.log('Checking favourite status for:', { productId, userEmail });
             const response = await fetch(`https://backend-production-7f80.up.railway.app/api/user/auth/favorites/check/${productId}`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -44,7 +43,6 @@ const FavouriteButton = ({ productId, size = 'medium' }) => {
             if (response.ok) {
                 const data = await response.json();
                 setIsFavourited(data.isFavourited);
-                console.log('Favourite status response:', data);
             }
         } catch (error) {
             console.error('Error checking favourite status:', error)
@@ -66,7 +64,6 @@ const FavouriteButton = ({ productId, size = 'medium' }) => {
 
         try {
             if (isFavourited) {
-                console.log('Sending POST/DELETE request for favourite:', { productId, userEmail });
                 await fetch(`https://backend-production-7f80.up.railway.app/api/user/auth/favorites/${productId}`, {
                     method: 'DELETE',
                     headers: {

@@ -34,8 +34,6 @@ const OrderList = () => {
 
                 if (!response.ok) {
                     throw new Error(`Failed to fetch orders: ${response.status}`);
-                } else {
-                    console.log('------------------------------orders fetched-------------------')
                 }
 
                 const data = await response.json();
@@ -54,8 +52,6 @@ const OrderList = () => {
 
     // Apply filters when they change
     useEffect(() => {
-        console.log(...orders)
-        console.log(orders)
         let result = [...orders];
 
         // Apply order type filter
@@ -359,7 +355,6 @@ const OrderList = () => {
                                                     <dd className="mt-1.5 text-base font-semibold text-gray-909 dark:text-white">
                                                         <Link to={`/order-tracking/${order.id}`} className="hover:underline">
                                                             {order.order_number}
-                                                            {console.log(order.order_number ? order.order_number : 'nothing here yet')}
                                                         </Link>
                                                     </dd>
                                                 </dl>

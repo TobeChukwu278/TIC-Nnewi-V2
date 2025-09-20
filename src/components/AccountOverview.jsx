@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Home, Edit, Phone, MapPin, Building, CreditCard } from 'lucide-react';
 import { useUser } from '../UserContext';
 
-console.log('account overview active')
 
 const AccountOverview = () => {
     const [userData, setUserData] = useState(null);
@@ -33,7 +32,7 @@ const AccountOverview = () => {
                             'Content-Type': 'application/json'
                         }
                     });
-                    console.log(response)
+
 
                     if (!response.ok) {
                         throw new Error('Failed to fetch orders');
@@ -41,7 +40,6 @@ const AccountOverview = () => {
 
                     const ordersData = await response.json();
                     setOrders(ordersData);
-                    console.log(ordersData)
                 }
 
                 setLoading(false);
