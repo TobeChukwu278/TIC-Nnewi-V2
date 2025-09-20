@@ -140,7 +140,7 @@ const FavoritesPage = () => {
                 <p className="text-gray-600 mb-4">Start adding products to your wishlist!</p>
                 <button
                     onClick={() => navigate('/')}
-                    className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-6 rounded-lg"
+                    className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-6 rounded-lg cursor-pointer"
                 >
                     Browse Products
                 </button>
@@ -160,9 +160,6 @@ const FavoritesPage = () => {
                                 src={product.image_url || 'https://via.placeholder.com/300x200?text=No+Image'}
                                 alt={product.name}
                                 className="w-full h-48 object-cover"
-                            // onError={(e) => {
-                            //     e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
-                            // }}
                             />
                             <button
                                 onClick={() => removeFavorite(product.id)}
@@ -175,7 +172,7 @@ const FavoritesPage = () => {
                         <div className="p-4">
                             <h3 className="font-semibold text-lg mb-2 line-clamp-2">{product.name}</h3>
                             <p className="text-gray-600 text-sm mb-3">{product.category}</p>
-                            <p className="text-green-600 font-bold text-lg mb-4">${product.price}</p>
+                            <p className="text-green-600 font-bold text-lg mb-4">₦{product.price}</p>
 
                             <div className="flex space-x-3">
                                 <button
