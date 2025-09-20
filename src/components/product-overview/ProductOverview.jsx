@@ -24,6 +24,12 @@ const ProductOverview = () => {
         navigate(-1);
     };
 
+    function OptimizedImage({ src, width = 600, quality = 75, alt, className }) {
+        const optimizedSrc = `/_vercel/image ? url = ${encodeURIComponent(src)
+            }& w=${width}& q=${quality}`;
+        return <img src={optimizedSrc} alt={alt} className={className} loading="lazy" />;
+    }
+
     // Handle add to cart with toast notifications
     const addToCart = () => {
         if (!product) return;
@@ -158,7 +164,7 @@ const ProductOverview = () => {
 
                         <div className="max-w-md mx-auto lg:max-w-lg">
                             <div className="relative pt-[100%] md:pt-[75%]">
-                                <img
+                                <OptimizedImage
                                     className="absolute top-0 left-0 w-full h-full object-contain rounded-lg shadow-md"
                                     src={product.main_image_url || 'https://via.placeholder.com/500x500?text=No+Image'}
                                     alt={product.name}

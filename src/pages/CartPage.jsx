@@ -16,6 +16,12 @@ const CartPage = () => {
     const [suggestedProducts, setSuggestedProducts] = useState([]);
     const [allProducts, setAllProducts] = useState([]);
 
+    function OptimizedImage({ src, width = 600, quality = 75, alt, className }) {
+        const optimizedSrc = `/_vercel/image ? url = ${encodeURIComponent(src)
+            }& w=${width}& q=${quality}`;
+        return <img src={optimizedSrc} alt={alt} className={className} loading="lazy" />;
+    }
+
     // Load all products and cart items
     useEffect(() => {
         const loadData = async () => {
@@ -181,13 +187,10 @@ const CartPage = () => {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6">
                 {/* Product Image */}
                 <div className="shrink-0 md:order-1">
-                    <img
+                    <OptimizedImage
                         src={item.image || item.main_image_url || 'https://via.placeholder.com/80x80?text=No+Image'}
                         alt={item.name}
                         className="h-20 w-20 object-contain rounded-lg"
-                    // onError={(e) => {
-                    //     e.target.src = 'https://via.placeholder.com/80x80?text=No+Image';
-                    // }}
                     />
                 </div>
 
@@ -258,7 +261,7 @@ const CartPage = () => {
 
     const SuggestedProductCard = ({ product }) => (
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm hover:shadow-md transition-shadow">
-            <img
+            <OptimizedImage
                 src={product.main_image_url || product.image || 'https://via.placeholder.com/200x200?text=No+Image'}
                 alt={product.name}
                 className="w-full h-32 object-contain mb-4 rounded-lg"

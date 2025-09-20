@@ -27,6 +27,12 @@ const ProductCard = ({ product }) => {
     const isLowStock = stock > 0 && stock <= 10;
     const isOutOfStock = stock === 0;
 
+    function OptimizedImage({ src, width = 600, quality = 75, alt, className }) {
+        const optimizedSrc = `/_vercel/image ? url = ${encodeURIComponent(src)
+            }& w=${width}& q=${quality}`;
+        return <img src={optimizedSrc} alt={alt} className={className} loading="lazy" />;
+    }
+
     const addToCart = () => {
         // Check if product is out of stock
         if (isOutOfStock) {
@@ -144,7 +150,7 @@ const ProductCard = ({ product }) => {
                 {/* Image Section */}
                 <Link to={`/products/${product.id}`} className="block h-48 w-full mb-3">
                     <div className={`relative h-full ${isOutOfStock ? 'opacity-60' : ''}`}>
-                        <img
+                        <OptimizedImage
                             className="mx-auto h-full w-full object-contain dark:hidden"
                             src={imageError
                                 ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSIjODg4ODg4Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='
@@ -153,7 +159,7 @@ const ProductCard = ({ product }) => {
                             alt={product.name || 'Product image'}
                             onError={handleImageError}
                         />
-                        <img
+                        <OptimizedImage
                             className="mx-auto hidden h-full w-full object-contain dark:block"
                             src={imageError
                                 ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSIjNzc3Nzc3Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='
@@ -240,8 +246,8 @@ const ProductCard = ({ product }) => {
                             onClick={addToCart}
                             disabled={isAdding || isOutOfStock}
                             className={`inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-green-300 disabled:opacity-50 disabled:cursor-not-allowed ${isOutOfStock
-                                    ? 'bg-gray-400 text-white cursor-not-allowed'
-                                    : 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-700'
+                                ? 'bg-gray-400 text-white cursor-not-allowed'
+                                : 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-700'
                                 }`}
                         >
                             {isAdding ? (
@@ -266,7 +272,7 @@ const ProductCard = ({ product }) => {
                     <div className="relative">
                         <Link to={`/products/${product.id}`} className="flex-shrink-0 w-20 h-20 block">
                             <div className={`relative w-full h-full ${isOutOfStock ? 'opacity-60' : ''}`}>
-                                <img
+                                <OptimizedImage
                                     className="w-full h-full object-contain rounded-md"
                                     src={imageError
                                         ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSIjODg4ODg4Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='
@@ -350,8 +356,8 @@ const ProductCard = ({ product }) => {
                                 onClick={addToCart}
                                 disabled={isAdding || isOutOfStock}
                                 className={`inline-flex items-center rounded-lg px-2 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-green-300 disabled:opacity-50 disabled:cursor-not-allowed ${isOutOfStock
-                                        ? 'bg-gray-400 text-white cursor-not-allowed'
-                                        : 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-700'
+                                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                                    : 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-700'
                                     }`}
                             >
                                 {isAdding ? (

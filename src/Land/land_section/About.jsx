@@ -1,13 +1,19 @@
 import React from 'react';
 
 const About = () => {
+
+    function OptimizedImage({ src, width = 600, quality = 75, alt, className }) {
+        const optimizedSrc = `/_vercel/image ? url = ${encodeURIComponent(src)
+            }& w=${width}& q=${quality}`;
+        return <img src={optimizedSrc} alt={alt} className={className} loading="lazy" />;
+    }
     return (
         <section id="about" className="py-16 bg-white">
             <div className="container mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                     {/* Image Section */}
                     <div className="relative">
-                        <img
+                        <OptimizedImage
                             src="/image3.png"
                             alt="TIC Nnewi team working together"
                             className="w-full h-auto rounded-lg shadow-xl transform hover:scale-105 transition-transform duration-300"

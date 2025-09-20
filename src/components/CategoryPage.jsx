@@ -24,6 +24,13 @@ const CategoryPage = () => {
     const [products, setProducts] = useState([]);
     const [error, setError] = useState(null);
 
+    function OptimizedImage({ src, width = 600, quality = 75, alt, className }) {
+        const optimizedSrc = `/_vercel/image ? url = ${encodeURIComponent(src)
+            }& w=${width}& q=${quality}`;
+        return <img src={optimizedSrc} alt={alt} className={className} loading="lazy" />;
+    }
+
+
     useEffect(() => {
         const fetchProducts = async () => {
             setLoading(true);
@@ -68,7 +75,7 @@ const CategoryPage = () => {
             {/* Hero Banner */}
             {heroBanners[category] && (
                 <div className="w-full h-64 mb-8">
-                    <img
+                    <OptimizedImage
                         src={heroBanners[category]}
                         alt={`${category} banner`}
                         className="w-full h-full object-cover rounded-lg shadow-md"
