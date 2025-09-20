@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { usePaystackPayment } from 'react-paystack';
 import {
     CreditCard,
     Truck,
@@ -31,11 +32,13 @@ const CheckoutSummary = () => {
     const [voucherCode, setVoucherCode] = useState('');
     const [deliveryFee, setDeliveryFee] = useState(1500);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [paymentReference, setPaymentReference] = useState(null);
+    const initializePaymentRef = useRef(null);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        state: 'Anambra',
-        city: 'Nnewi',
+        state: 'Lagos',
+        city: 'Ikeja',
         address: '',
         phone: '',
         additionalInfo: ''
@@ -49,6 +52,130 @@ const CheckoutSummary = () => {
         'Kano': ['Kano Municipal', 'Fagge', 'Dala', 'Tarauni', 'Nassarawa'],
         'Oyo': ['Ibadan', 'Ogbomoso', 'Oyo', 'Iseyin', 'Saki'],
         'Delta': ['Asaba', 'Warri', 'Sapele', 'Agbor', 'Ughelli']
+    };
+
+    // Create a fixed reference when component mounts
+    useEffect(() => {
+        const sessionRef = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        setPaymentReference(sessionRef);
+    }, []);
+
+    // Paystack configuration - only create when we have a reference
+    const paystackConfig = useMemo(() => {
+        return paymentReference ? {
+            reference: paymentReference,
+            email: formData.email || 'customer@example.com',
+            amount: Math.round(total * 100),
+            publicKey: 'pk_test_c1120dda031348b3fed40c24e2f7c7bb3490ce2b',
+            currency: 'NGN',
+            channels: ['card', 'bank', 'ussd', 'qr', 'mobile_money'],
+            metadata: {
+                custom_fields: [
+                    {
+                        display_name: "Customer Name",
+                        variable_name: "customer_name",
+                        value: formData.name || 'Customer'
+                    },
+                    {
+                        display_name: "Phone Number",
+                        variable_name: "phone_number",
+                        value: formData.phone || ''
+                    },
+                    {
+                        display_name: "Delivery Address",
+                        variable_name: "delivery_address",
+                        value: `${formData.address}, ${formData.city}, ${formData.state}`
+                    }
+                ]
+            }
+        } : null;
+    }, [
+        paymentReference,
+        formData.email,
+        formData.name,
+        formData.phone,
+        formData.address,
+        formData.city,
+        formData.state,
+        total
+    ]);
+
+    // Initialize Paystack hook at component level
+    const initializePayment = usePaystackPayment(paystackConfig || {});
+
+    // Store the initialize function when it's ready
+    useEffect(() => {
+        if (paystackConfig && initializePayment) {
+            initializePaymentRef.current = initializePayment;
+        }
+    }, [paystackConfig, initializePayment]);
+
+    // Handle Paystack success
+    const onPaystackSuccess = async (reference) => {
+        console.log('Payment successful!', reference);
+        setIsProcessing(true);
+
+        try {
+            await verifyPayment(reference.reference);
+        } catch (error) {
+            console.error('Error verifying payment:', error);
+            alert('Payment was successful but there was an issue updating your order. Please contact support.');
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    // Verify payment with backend
+    const verifyPayment = async (paymentRef) => {
+        try {
+            console.log('Verifying payment with reference:', paymentRef);
+            const token = localStorage.getItem('authToken');
+
+            const response = await fetch(`http://st:3001/api/user/auth/verify-payment`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    paymentReference: paymentRef
+                })
+            });
+
+            console.log('Verification response status:', response.status);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Verification failed:', errorData);
+                throw new Error('Payment verification failed: ' + (errorData.message || 'Unknown error'));
+            }
+
+            const result = await response.json();
+            console.log('Payment verified successfully:', result);
+
+            // Clear cart and navigate to confirmation
+            localStorage.removeItem('cart');
+            localStorage.removeItem('checkoutFormData');
+            setCartItems([]);
+            window.dispatchEvent(new Event('cartUpdated'));
+
+            navigate('/order-confirmation', {
+                state: {
+                    orderId: result.orderId,
+                    orderNumber: result.orderNumber
+                }
+            });
+
+        } catch (error) {
+            console.error('Payment verification error:', error);
+            throw error;
+        }
+    };
+
+    // Handle Paystack close
+    const onPaystackClose = () => {
+        console.log('Payment closed');
+        setIsProcessing(false);
     };
 
     // Load cart items from localStorage and check for saved form data
@@ -76,7 +203,12 @@ const CheckoutSummary = () => {
         // Load saved form data if available
         const savedFormData = localStorage.getItem('checkoutFormData');
         if (savedFormData) {
-            setFormData(JSON.parse(savedFormData));
+            try {
+                const parsedData = JSON.parse(savedFormData);
+                setFormData(parsedData);
+            } catch (error) {
+                console.error('Error parsing saved form data:', error);
+            }
         }
 
         loadCartItems();
@@ -120,58 +252,24 @@ const CheckoutSummary = () => {
             ...prev,
             [name]: value
         }));
+        console.log('Form Data Updated:', { ...formData, [name]: value });
     };
 
     const handleVoucherApply = () => {
-        // Handle voucher application logic here
         console.log('Applying voucher:', voucherCode);
         // You would typically make an API call to validate the voucher
     };
 
-    const handlePayment = async (e) => {
-        e.preventDefault();
-        setIsProcessing(true);
-
+    // Complete order for non-Paystack methods
+    const completeOrder = async (paymentMethodUsed, paymentRef = null) => {
         // Validate form
         if (!formData.name || !formData.email || !formData.phone || !formData.address) {
-            alert('Please fill in all required fields');
-            setIsProcessing(false);
-            return;
+            throw new Error('Please fill in all required fields');
         }
 
-        // Generate order data
-        const orderData = {
-            id: `#${Math.floor(1000000 + Math.random() * 9000000)}`,
-            date: new Date().toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            }),
-            paymentMethod: paymentMethod,
-            deliveryMethod: deliveryMethod,
-            items: cartItems,
-            subtotal: subtotal,
-            tax: tax,
-            deliveryFee: deliveryFee,
-            total: total,
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            address: `${formData.address}, ${formData.city}, ${formData.state}`,
-            additionalInfo: formData.additionalInfo
-        };
-
-        // Save order and user data to localStorage
-        localStorage.setItem('orderData', JSON.stringify(orderData));
-
-        // Save to user orders
-        const existingOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
-        const updatedOrders = [orderData, ...existingOrders];
-        localStorage.setItem('userOrders', JSON.stringify(updatedOrders));
-
         try {
-            // Get authentication token from wherever it's stored
-            const token = localStorage.getItem('authToken'); // Adjust based on your auth setup
+            // Get authentication token
+            const token = localStorage.getItem('authToken');
 
             // Send order to backend API
             const response = await fetch(`https://backend-production-7f80.up.railway.app/api/user/auth/orders`, {
@@ -199,7 +297,8 @@ const CheckoutSummary = () => {
                         country: 'Nigeria',
                         additionalInfo: formData.additionalInfo
                     },
-                    paymentMethod: paymentMethod
+                    paymentMethod: paymentMethodUsed,
+                    paymentReference: paymentRef
                 })
             });
 
@@ -216,35 +315,103 @@ const CheckoutSummary = () => {
             setCartItems([]);
             window.dispatchEvent(new Event('cartUpdated'));
 
-            // Navigate to confirmation page with both local and server data
+            // Navigate to confirmation page
             navigate('/order-confirmation', {
-                state: { ...orderData, serverId: result.orderId || result.id }
+                state: {
+                    orderId: result.orderId,
+                    orderNumber: result.orderNumber || result.order_number
+                }
             });
 
         } catch (error) {
             console.error('Order creation error:', error);
+            throw error;
+        }
+    };
 
-            // Fallback: complete order locally if API fails
-            localStorage.removeItem('cart');
-            localStorage.removeItem('checkoutFormData');
-            setCartItems([]);
-            window.dispatchEvent(new Event('cartUpdated'));
+    // Create order for Paystack (with the same reference)
+    const createOrderOnly = async () => {
+        const token = localStorage.getItem('authToken');
 
-            // Show warning but still proceed
-            alert('Order was created locally. There was an issue connecting to the server: ' + error.message);
+        const response = await fetch(`https://backend-production-7f80.up.railway.app/api/user/auth/orders`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                items: cartItems.map(item => ({
+                    productId: item.id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                    image: item.image || ''
+                })),
+                total: total,
+                shippingAddress: {
+                    name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    address: formData.address,
+                    city: formData.city,
+                    state: formData.state,
+                    country: 'Nigeria',
+                    additionalInfo: formData.additionalInfo
+                },
+                paymentMethod: 'paystack',
+                paymentReference: paymentReference // Send the same reference we're using
+            })
+        });
 
-            navigate('/order-confirmation', { state: orderData });
-        } finally {
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to create order');
+        }
+
+        return await response.json();
+    };
+
+    // Handle payment submission
+    const handlePayment = async (e) => {
+        e.preventDefault();
+        if (isProcessing) return;
+
+        if (!formData.name || !formData.email || !formData.phone || !formData.address) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
+        setIsProcessing(true);
+
+        try {
+            if (paymentMethod === 'paystack') {
+                if (!initializePaymentRef.current) {
+                    throw new Error('Payment system not ready. Please try again.');
+                }
+
+                // Create order first
+                await createOrderOnly();
+
+                // Launch Paystack payment modal using the ref
+                initializePaymentRef.current(onPaystackSuccess, onPaystackClose);
+                return; // Don't set isProcessing to false here
+            }
+
+            // For other payment methods
+            await completeOrder(paymentMethod, null);
+        } catch (error) {
+            console.error('Payment error:', error);
+            alert('Error processing payment: ' + error.message);
             setIsProcessing(false);
         }
     };
 
     const handleGoBack = () => {
-        navigate(-1); // Go back to previous page
+        navigate(-1);
     };
 
     const handleGoHome = () => {
-        navigate('/'); // Navigate to home page
+        navigate('/');
     };
 
     return (
@@ -411,22 +578,6 @@ const CheckoutSummary = () => {
                                     />
                                 </div>
 
-                                {/* <div>
-                                    <label htmlFor="company" className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
-                                        <Building className="inline-block h-4 w-4 mr-1" />
-                                        Company Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="company"
-                                        name="company"
-                                        value={formData.company}
-                                        onChange={handleInputChange}
-                                        className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
-                                        placeholder="Your Company Ltd"
-                                    />
-                                </div> */}
-
                                 <div className="sm:col-span-2">
                                     <label htmlFor="additionalInfo" className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
                                         Additional Delivery Information
@@ -452,6 +603,33 @@ const CheckoutSummary = () => {
                             </h3>
 
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                {/* Paystack Option */}
+                                <div className={`rounded-lg border p-4 ps-4 ${paymentMethod === 'paystack' ? 'border-primary-500 bg-primary-50 dark:bg-gray-800' : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'}`}>
+                                    <div className="flex items-start">
+                                        <div className="flex h-5 items-center">
+                                            <input
+                                                id="paystack"
+                                                aria-describedby="paystack-text"
+                                                type="radio"
+                                                name="payment-method"
+                                                value="paystack"
+                                                checked={paymentMethod === 'paystack'}
+                                                onChange={() => setPaymentMethod('paystack')}
+                                                className="h-4 w-4 border-gray-300 bg-white text-primary-600 focus:ring-2 focus:ring-primary-600 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
+                                            />
+                                        </div>
+
+                                        <div className="ms-4 text-sm">
+                                            <label htmlFor="paystack" className="font-medium leading-none text-gray-900 dark:text-white">
+                                                Pay with Card
+                                            </label>
+                                            <p id="paystack-text" className="mt-1 text-xs font-normal text-gray-500 dark:text-gray-400">
+                                                Visa, Mastercard, Verve (Paystack)
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div className={`rounded-lg border p-4 ps-4 ${paymentMethod === 'bank-transfer' ? 'border-primary-500 bg-primary-50 dark:bg-gray-800' : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'}`}>
                                     <div className="flex items-start">
                                         <div className="flex h-5 items-center">
@@ -470,28 +648,6 @@ const CheckoutSummary = () => {
                                         <div className="ms-4 text-sm">
                                             <label htmlFor="bank-transfer" className="font-medium leading-none text-gray-900 dark:text-white"> Bank Transfer </label>
                                             <p id="bank-transfer-text" className="mt-1 text-xs font-normal text-gray-500 dark:text-gray-400">Pay directly from your bank account</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className={`rounded-lg border p-4 ps-4 ${paymentMethod === 'transfer' ? 'border-primary-500 bg-primary-50 dark:bg-gray-800' : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'}`}>
-                                    <div className="flex items-start">
-                                        <div className="flex h-5 items-center">
-                                            <input
-                                                id="transfer"
-                                                aria-describedby="transfer-text"
-                                                type="radio"
-                                                name="payment-method"
-                                                value="transfer"
-                                                checked={paymentMethod === 'transfer'}
-                                                onChange={() => setPaymentMethod('transfer')}
-                                                className="h-4 w-4 border-gray-300 bg-white text-primary-600 focus:ring-2 focus:ring-primary-600 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
-                                            />
-                                        </div>
-
-                                        <div className="ms-4 text-sm">
-                                            <label htmlFor="transfer" className="font-medium leading-none text-gray-900 dark:text-white"> Quick Transfer </label>
-                                            <p id="transfer-text" className="mt-1 text-xs font-normal text-gray-500 dark:text-gray-400">Instant bank transfer</p>
                                         </div>
                                     </div>
                                 </div>
@@ -544,28 +700,6 @@ const CheckoutSummary = () => {
                                         </div>
 
                                         <div className="ms-4 text-sm">
-                                            <label htmlFor="standard" className="font-medium leading-none text-gray-900 dark:text-white"> Standard Delivery </label>
-                                            <p id="standard-text" className="mt-1 text-xs font-normal text-gray-500 dark:text-gray-400">₦1,500 • 3-5 business days</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className={`rounded-lg border p-4 ps-4 ${deliveryMethod === 'express' ? 'border-primary-500 bg-primary-50 dark:bg-gray-800' : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'}`}>
-                                    <div className="flex items-start">
-                                        <div className="flex h-5 items-center">
-                                            <input
-                                                id="express"
-                                                aria-describedby="express-text"
-                                                type="radio"
-                                                name="delivery-method"
-                                                value="express"
-                                                checked={deliveryMethod === 'express'}
-                                                onChange={() => setDeliveryMethod('express')}
-                                                className="h-4 w-4 border-gray-300 bg-white text-primary-600 focus:ring-2 focus:ring-primary-600 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-primary-600"
-                                            />
-                                        </div>
-
-                                        <div className="ms-4 text-sm">
                                             <label htmlFor="express" className="font-medium leading-none text-gray-900 dark:text-white"> Express Delivery </label>
                                             <p id="express-text" className="mt-1 text-xs font-normal text-gray-500 dark:text-gray-400">₦3,500 • 1-2 business days</p>
                                         </div>
@@ -595,14 +729,6 @@ const CheckoutSummary = () => {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Voucher Code */}
-                        {/* <div>
-                            <label htmlFor="voucher" className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
-                                <Gift className="inline-block h-4 w-4 mr-1" />
-                                Discount Code
-                            </label>
-                            <div className="flex max-w-md items */}
 
                         {/* Voucher Code */}
                         <div>
@@ -645,7 +771,7 @@ const CheckoutSummary = () => {
 
                                 <dl className="flex items-center justify-between gap-4 py-3">
                                     <dt className="text-base font-normal text-gray-500 dark:text-gray-400">VAT (7.5%)</dt>
-                                    <dd className="text-base font-medium text-gray-900 dark:text-white">₦{tax.toLocaleString()}</dd>
+                                    <dd className="textBase font-medium text-gray-900 dark:text-white">₦{tax.toLocaleString()}</dd>
                                 </dl>
 
                                 <dl className="flex items-center justify-between gap-4 py-3">
@@ -674,7 +800,7 @@ const CheckoutSummary = () => {
                                 ) : (
                                     <>
                                         <Lock className="mr-2 h-4 w-4" />
-                                        Confirm Order & Pay
+                                        {paymentMethod === 'paystack' ? 'Pay with Card' : 'Confirm Order & Pay'}
                                         <ArrowRight className="ml-2 h-4 w-4" />
                                     </>
                                 )}

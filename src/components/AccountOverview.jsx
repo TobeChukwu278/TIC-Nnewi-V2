@@ -1,38 +1,59 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Home, Edit, Phone, MapPin, Building, CreditCard } from 'lucide-react';
+import { useUser } from '../UserContext';
+
+console.log('account overview active')
 
 const AccountOverview = () => {
     const [userData, setUserData] = useState(null);
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const { token } = useUser(); // Get authentication token
 
-    // Load user data and orders from localStorage
+    // Load user data from localStorage and orders from API
     useEffect(() => {
-        const loadData = () => {
+        const loadData = async () => {
             try {
-                const savedUserData = localStorage.getItem('userData');
-                const savedOrders = localStorage.getItem('userOrders');
-
+                // Load user data from localStorage
+                const savedUserData = localStorage.getItem('authToken');
                 if (savedUserData) {
-                    setUserData(JSON.parse(savedUserData));
+                    // setUserData(JSON.parse(savedUserData));
+                    savedUserData ? setUserData(savedUserData) : setUserData(JSON.parse(savedUserData));
                 }
 
-                if (savedOrders) {
-                    const parsedOrders = JSON.parse(savedOrders);
-                    setOrders(parsedOrders);
+                // Fetch orders from API
+                if (token) {
+                    const response = await fetch('https://backend-production-7f80.up.railway.app/api/user/auth/orders', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    console.log(response)
+
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch orders');
+                    }
+
+                    const ordersData = await response.json();
+                    setOrders(ordersData);
+                    console.log(ordersData)
                 }
 
                 setLoading(false);
             } catch (error) {
                 console.error('Error loading data:', error);
+                setError('Failed to load orders. Please try again later.');
                 setLoading(false);
             }
         };
 
         loadData();
-    }, []);
+    }, [token]);
 
     const handleGoBack = () => {
         navigate(-1);
@@ -44,7 +65,17 @@ const AccountOverview = () => {
 
     const getStatusBadge = (status) => {
         switch (status) {
-            case 'pre-order':
+            case 'pending':
+                return {
+                    class: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+                    icon: (
+                        <svg className="me-1 h-3 w-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    ),
+                    text: 'Pending'
+                };
+            case 'confirmed':
                 return {
                     class: 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300',
                     icon: (
@@ -52,9 +83,9 @@ const AccountOverview = () => {
                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.5 4h-13m13 16h-13M8 20v-3.333a2 2 0 0 1 .4-1.2L10 12.6a1 1 0 0 0 0-1.2L8.4 8.533a2 2 0 0 1-.4-1.2V4h8v3.333a2 2 0 0 1-.4 1.2L13.957 11.4a1 1 0 0 0 0 1.2l1.643 2.867a2 2 0 0 1 .4 1.2V20H8Z" />
                         </svg>
                     ),
-                    text: 'Pre-order'
+                    text: 'Confirmed'
                 };
-            case 'transit':
+            case 'shipped':
                 return {
                     class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
                     icon: (
@@ -62,10 +93,9 @@ const AccountOverview = () => {
                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h6l2 4m-8-4v8m0-8V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v9h2m8 0H9m4 0h2m4 0h2v-4m0 0h-5m3.5 5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm-10 0a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z" />
                         </svg>
                     ),
-                    text: 'In transit'
+                    text: 'Shipped'
                 };
-            case 'confirmed':
-            case 'completed':
+            case 'delivered':
                 return {
                     class: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
                     icon: (
@@ -73,7 +103,7 @@ const AccountOverview = () => {
                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 11.917 9.724 16.5 19 7.5" />
                         </svg>
                     ),
-                    text: status === 'completed' ? 'Completed' : 'Confirmed'
+                    text: 'Delivered'
                 };
             case 'cancelled':
                 return {
@@ -103,6 +133,14 @@ const AccountOverview = () => {
                     </div>
                 </div>
             </section>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-6 text-center text-red-500">
+                <p>{error}</p>
+            </div>
         );
     }
 
@@ -350,14 +388,14 @@ const AccountOverview = () => {
                         </div>
                     ) : (
                         orders.slice(0, 4).map((order) => {
-                            const statusBadge = getStatusBadge(order.status);
+                            const statusBadge = getStatusBadge(order.status || 'pending');
                             return (
                                 <div key={order.id} className="flex flex-wrap items-center gap-y-4 border-b border-gray-200 py-4 dark:border-gray-700 md:py-5">
                                     <dl className="w-1/2 sm:w-48">
                                         <dt className="text-base font-medium text-gray-500 dark:text-gray-400">Order ID:</dt>
                                         <dd className="mt-1.5 text-base font-semibold text-gray-900 dark:text-white">
                                             <Link to={`/order-tracking/${order.id}`} className="hover:underline">
-                                                {order.id}
+                                                {order.order_number}
                                             </Link>
                                         </dd>
                                     </dl>
@@ -365,20 +403,20 @@ const AccountOverview = () => {
                                     <dl className="w-1/2 sm:w-1/4 md:flex-1 lg:w-auto">
                                         <dt className="text-base font-medium text-gray-500 dark:text-gray-400">Date:</dt>
                                         <dd className="mt-1.5 text-base font-semibold text-gray-900 dark:text-white">
-                                            {new Date(order.date).toLocaleDateString()}
+                                            {new Date(order.created_at || order.date).toLocaleDateString()}
                                         </dd>
                                     </dl>
 
                                     <dl className="w-1/2 sm:w-1/5 md:flex-1 lg:w-auto">
                                         <dt className="text-base font-medium text-gray-500 dark:text-gray-400">Price:</dt>
                                         <dd className="mt-1.5 text-base font-semibold text-gray-900 dark:text-white">
-                                            ₦{order.total.toLocaleString()}
+                                            ₦{(order.total_amount || order.total || 0).toLocaleString()}
                                         </dd>
                                     </dl>
 
                                     <dl className="w-1/2 sm:w-1/4 sm:flex-1 lg:w-auto">
                                         <dt className="text-base font-medium text-gray-500 dark:text-gray-400">Status:</dt>
-                                        <dd className="me-2 mt-1.5 inline-flex items-center rounded px-2.5 py-0.5 text-xs font-medium ${statusBadge.class}">
+                                        <dd className={`me-2 mt-1.5 inline-flex items-center rounded px-2.5 py-0.5 text-xs font-medium ${statusBadge.class}`}>
                                             {statusBadge.icon}
                                             {statusBadge.text}
                                         </dd>

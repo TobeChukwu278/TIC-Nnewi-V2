@@ -34,6 +34,8 @@ const OrderList = () => {
 
                 if (!response.ok) {
                     throw new Error(`Failed to fetch orders: ${response.status}`);
+                } else {
+                    console.log('------------------------------orders fetched-------------------')
                 }
 
                 const data = await response.json();
@@ -52,6 +54,8 @@ const OrderList = () => {
 
     // Apply filters when they change
     useEffect(() => {
+        console.log(...orders)
+        console.log(orders)
         let result = [...orders];
 
         // Apply order type filter
@@ -62,7 +66,7 @@ const OrderList = () => {
         // Apply duration filter
         const now = new Date();
         result = result.filter(order => {
-            const orderDate = new Date(order.date);
+            const orderDate = new Date(order.created_at);
             switch (durationFilter) {
                 case 'this week':
                     {
@@ -155,7 +159,7 @@ const OrderList = () => {
 
     const getStatusBadge = (status) => {
         switch (status) {
-            case 'pre-order':
+            case 'pending':
                 return {
                     class: 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300',
                     icon: (
@@ -163,9 +167,19 @@ const OrderList = () => {
                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.5 4h-13m13 16h-13M8 20v-3.333a2 2 0 0 1 .4-1.2L10 12.6a1 1 0 0 0 0-1.2L8.4 8.533a2 2 0 0 1-.4-1.2V4h8v3.333a2 2 0 0 1-.4 1.2L13.957 11.4a1 1 0 0 0 0 1.2l1.643 2.867a2 2 0 0 1 .4 1.2V20H8Z" />
                         </svg>
                     ),
-                    text: 'Pre-order'
+                    text: 'Pending'
                 };
-            case 'transit':
+            case 'delivered':
+                return {
+                    class: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+                    icon: (
+                        <svg className="me-1 h-3 w-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    ),
+                    text: 'Delivered'
+                };
+            case 'shipped':
                 return {
                     class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
                     icon: (
@@ -173,7 +187,7 @@ const OrderList = () => {
                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h6l2 4m-8-4v8m0-8V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v9h2m8 0H9m4 0h2m4 0h2v-4m0 0h-5m3.5 5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm-10 0a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z" />
                         </svg>
                     ),
-                    text: 'In transit'
+                    text: 'Shipped'
                 };
             case 'confirmed':
                 return {
@@ -288,10 +302,11 @@ const OrderList = () => {
                                     className="block w-full min-w-[8rem] rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                                 >
                                     <option value="all">All orders</option>
-                                    <option value="pre-order">Pre-order</option>
-                                    <option value="transit">In transit</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="shipped">Shipped</option>
                                     <option value="confirmed">Confirmed</option>
                                     <option value="cancelled">Cancelled</option>
+                                    <option value="delivered">Delivered</option>
                                 </select>
                             </div>
 
@@ -343,7 +358,8 @@ const OrderList = () => {
                                                     <dt className="text-base font-medium text-gray-500 dark:text-gray-400">Order ID:</dt>
                                                     <dd className="mt-1.5 text-base font-semibold text-gray-909 dark:text-white">
                                                         <Link to={`/order-tracking/${order.id}`} className="hover:underline">
-                                                            {order.id}
+                                                            {order.order_number}
+                                                            {console.log(order.order_number ? order.order_number : 'nothing here yet')}
                                                         </Link>
                                                     </dd>
                                                 </dl>
@@ -351,7 +367,8 @@ const OrderList = () => {
                                                 <dl className="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
                                                     <dt className="text-base font-medium text-gray-500 dark:text-gray-400">Date:</dt>
                                                     <dd className="mt-1.5 text-base font-semibold text-gray-900 dark:text-white">
-                                                        {new Date(order.date).toLocaleDateString()}
+                                                        {new Date(order.created_at
+                                                        ).toLocaleDateString()}
                                                     </dd>
                                                 </dl>
 
