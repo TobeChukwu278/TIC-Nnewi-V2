@@ -5,11 +5,11 @@ import { FaBars, FaTimes } from 'react-icons/fa';
 const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    function OptimizedImage({ src, width = 600, quality = 75, alt, className }) {
-        const optimizedSrc = `/_vercel/image ? url = ${encodeURIComponent(src)
-            }& w=${width}& q=${quality}`;
-        return <img src={optimizedSrc} alt={alt} className={className} loading="lazy" />;
-    }
+    // function OptimizedImage({ src, width = 600, quality = 75, alt, className }) {
+    //     const optimizedSrc = `/_vercel/image ? url = ${encodeURIComponent(src)
+    //         }& w=${width}& q=${quality}`;
+    //     return <img src={optimizedSrc} alt={alt} className={className} loading="lazy" />;
+    // }
 
     return (
         <header className="bg-white text-gray-800 shadow-lg sticky top-0 z-50">
@@ -17,7 +17,7 @@ const Header = () => {
                 {/* Logo */}
                 <NavLink to="/" className="text-2xl font-bold text-blue-600 transition duration-300 transform hover:scale-105">
                     {/* TIC Nnewi */}
-                    <OptimizedImage src='/image.png' alt='' />
+                    <img src='/image.png' alt='' />
                 </NavLink>
 
                 {/* Desktop Navigation */}

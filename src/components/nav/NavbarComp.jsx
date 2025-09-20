@@ -171,11 +171,11 @@ function ListItem({ title, href, icon: Icon, children, isMobile = false }) {
         );
     }
 
-    function OptimizedImage({ src, width = 600, quality = 75, alt, className }) {
-        const optimizedSrc = `/_vercel/image ? url = ${encodeURIComponent(src)
-            }& w=${width}& q=${quality}`;
-        return <img src={optimizedSrc} alt={alt} className={className} loading="lazy" />;
-    }
+    // function OptimizedImage({ src, width = 600, quality = 75, alt, className }) {
+    //     const optimizedSrc = `/_vercel/image ? url = ${encodeURIComponent(src)
+    //         }& w=${width}& q=${quality}`;
+    //     return <img src={optimizedSrc} alt={alt} className={className} loading="lazy" />;
+    // }
 
     return (
         <Link
@@ -209,7 +209,7 @@ const CartItem = ({ item, updateQuantity, removeFromCart }) => {
 
     return (
         <div key={item.id} className="flex items-center gap-4 border-b pb-4 last:border-b-0 last:pb-0">
-            <OptimizedImage
+            <img
                 src={item.image || 'https://via.placeholder.com/50'}
                 alt={item.name}
                 className="w-12 h-12 rounded-md object-cover flex-shrink-0"
@@ -412,7 +412,7 @@ export default function NavbarComp() {
                         TIC
                     </Link> */}
                     <Link to="/" className="shrink-0 text-2xl font-bold text-primary-700 dark:text-white">
-                        <OptimizedImage src='/image.png' alt='TIC' className="w-9 h-9" />
+                        <img src='/image.png' alt='TIC' className="w-9 h-9" />
                     </Link>
 
                     {/* Desktop Navigation Menu */}
