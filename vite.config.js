@@ -10,7 +10,7 @@ export default defineConfig({
       'tic-nnewi-v2.onrender.com',
       'tic-nnewi-v2.vercel.app'
     ],
-    port: process.env.PORT || 4173,
+    port: 4173,
     host: true
   },
   resolve: {

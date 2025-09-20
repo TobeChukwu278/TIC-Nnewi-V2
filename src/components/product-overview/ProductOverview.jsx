@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import ProductOverviewSkeleton from "./ProductOverviewSkeleton";
 import ProductCard from "../ProductCard";
 import FavouriteButton from "../favourite/FavouriteButton";
+import Toast, { useToast } from "../favourite/Toast"; // Import Toast components
 
 const ProductOverview = () => {
     const { id } = useParams();
@@ -14,53 +15,61 @@ const ProductOverview = () => {
     const [suggestedProducts, setSuggestedProducts] = useState([]);
     const [error, setError] = useState(null);
     const [isAdding, setIsAdding] = useState(false);
-    // const inStock = product.stock > 0;
-    // const lowStock = product.stock > 0 && product.stock <= 10;
 
+    // Add toast functionality
+    const { toast, showToast, hideToast } = useToast();
 
     // Handle back navigation
     const handleGoBack = () => {
         navigate(-1);
     };
 
-    // Handle add to cart - FIXED VERSION
+    // Handle add to cart with toast notifications
     const addToCart = () => {
         if (!product) return;
 
         setIsAdding(true);
 
-        // Get current cart from localStorage
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        try {
+            // Get current cart from localStorage
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
 
-        // Check if product already exists in cart
-        const existingItem = cart.find(item => item.id === product.id);
+            // Check if product already exists in cart
+            const existingItem = cart.find(item => item.id === product.id);
 
-        if (existingItem) {
-            // Increase quantity if product exists
-            existingItem.quantity += 1;
-        } else {
-            // Add new product to cart with only simple data
-            cart.push({
-                id: product.id,
-                name: product.name,
-                price: product.price,
-                quantity: 1,
-                image: product.main_image_url,
-                category: product.category,
-                // Only include simple data types, no React objects
-            });
+            if (existingItem) {
+                // Increase quantity if product exists
+                existingItem.quantity += 1;
+                showToast(`${product.name} quantity updated in cart`, 'info');
+            } else {
+                // Add new product to cart with only simple data
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    image: product.main_image_url,
+                    category: product.category,
+                    // Only include simple data types, no React objects
+                });
+                showToast(`${product.name} added to cart!`, 'success');
+            }
+
+            // Save updated cart back to localStorage
+            localStorage.setItem('cart', JSON.stringify(cart));
+
+            // Dispatch event to notify navbar (and other components) about the update
+            window.dispatchEvent(new Event('cartUpdated'));
+
+            console.log('Product added to cart:', product.name);
+
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            showToast('Failed to add product to cart', 'error');
         }
-
-        // Save updated cart back to localStorage
-        localStorage.setItem('cart', JSON.stringify(cart));
-
-        // Dispatch event to notify navbar (and other components) about the update
-        window.dispatchEvent(new Event('cartUpdated'));
 
         // Reset loading state after a short delay
         setTimeout(() => setIsAdding(false), 500);
-
-        console.log('Product added to cart:', product.name);
     };
 
     useEffect(() => {
@@ -98,6 +107,7 @@ const ProductOverview = () => {
             } catch (err) {
                 console.error("Failed to fetch products:", err);
                 setError(err.message);
+                showToast('Failed to load product details', 'error');
             } finally {
                 setLoading(false);
             }
@@ -169,12 +179,6 @@ const ProductOverview = () => {
                             <p className="text-sm text-gray-500 dark:text-gray-400 capitalize mt-1">
                                 {product.category || 'Uncategorized'}
                             </p>
-                            {/* <div className="flex items-center gap-2 mb-2">
-                                <div className={`w-2 h-2 rounded-full ${inStock ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                <span className={`text-sm ${inStock ? 'text-green-600' : 'text-red-600'}`}>
-                                    {inStock ? (lowStock ? `Low stock (${product.stock} left)` : 'In stock') : 'Out of stock'}
-                                </span>
-                            </div> */}
                         </div>
 
                         <p className="text-2xl font-extrabold sm:text-3xl lg:text-4xl dark:text-white">
@@ -199,10 +203,6 @@ const ProductOverview = () => {
 
                         {/* Actions - Stack on mobile, row on larger screens */}
                         <div className="flex flex-col sm:flex-row gap-3">
-                            {/* <button className="flex items-center justify-center px-4 py-3 border rounded-lg hover:bg-gray-50 transition-colors flex-1">
-                                <FavouriteButton />
-                                <span className="whitespace-nowrap">Add to favorites</span>
-                            </button> */}
                             <FavouriteButton productId={product.id} />
                             <button
                                 onClick={addToCart}
@@ -272,6 +272,16 @@ const ProductOverview = () => {
             >
                 <ArrowLeft className="w-6 h-6" />
             </button>
+
+            {/* Toast component */}
+            <Toast
+                message={toast.message}
+                type={toast.type}
+                isVisible={toast.show}
+                onClose={hideToast}
+                duration={toast.duration || 3000}
+                position="top-right"
+            />
         </section>
     );
 };
